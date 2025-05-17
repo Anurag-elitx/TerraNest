@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Challenge = require('../models/challengeModel');
 
 router.get('/', async (req, res) => {
@@ -12,6 +13,9 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid challenge ID' });
+  }
   try {
     const challenge = await Challenge.findById(req.params.id);
     if (!challenge) {

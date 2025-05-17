@@ -25,6 +25,10 @@ app.use('/api/challenges', require('./routes/challengeRoutes'));
 app.use('/api/posts', require('./routes/postRoutes'));
 app.use('/api/auth', require('./routes/authRoutes'));
 
+app.get('/api/test', (req, res) => {
+  res.json({ message: 'API is working!' });
+})
+
 app.use(errorHandler);
 
 module.exports = app;

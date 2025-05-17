@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Post = require('../models/postModel');
+const mongoose = require('mongoose');
+
 
 router.get('/', async (req, res) => {
   try {
@@ -11,7 +13,12 @@ router.get('/', async (req, res) => {
   }
 });
 
+
 router.get('/:id', async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid post ID' });
+  }
+
   try {
     const post = await Post.findById(req.params.id);
     if (!post) {
@@ -22,5 +29,4 @@ router.get('/:id', async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 });
-
 module.exports = router;

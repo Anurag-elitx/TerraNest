@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/userModel');
+const mongoose = require('mongoose');
+
 
 router.get('/', async (req, res) => {
   try {
@@ -12,6 +14,10 @@ router.get('/', async (req, res) => {
 });
 
 router.get('/:id', async (req, res) => {
+  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+    return res.status(400).json({ message: 'Invalid user ID' });
+  }
+
   try {
     const user = await User.findById(req.params.id).select('-password');
     if (!user) {
