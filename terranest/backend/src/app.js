@@ -17,7 +17,7 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to TerraNest API' });
 });
 
-app.use('/3', require('./routes/userRoutes'));
+app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/organizations', require('./routes/organizationRoutes'));
 app.use('/api/actions', require('./routes/actionRoutes'));
 app.use('/api/user-actions', require('./routes/userActionRoutes'));
