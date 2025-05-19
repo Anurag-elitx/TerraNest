@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');//create token to verify 
+const bcrypt = require('bcryptjs');   // used for encrypting or decryto password
 const User = require('../models/userModel');
 
 const generateToken = (id) => {

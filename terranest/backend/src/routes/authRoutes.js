@@ -1,78 +1,65 @@
 const express = require('express');
 const router = express.Router();
-const Action = require('../models/actionModel');
-const mongoose = require('mongoose');
+const User = require('../models/userModel');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { protect } = require('../middleware/authMiddleware');
 
-router.get('/', async (req, res) => {
-  try {
-    const actions = await Action.find();
-    res.json(actions);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: '7d',
+  });
+};
+
+
+router.post('/signup', async (req, res) => {
+  const { name, email, password } = req.body;
+
+  if (!name || !email || !password)
+    return res.status(400).json({ message: 'All fields required' });
+
+  const userExists = await User.findOne({ email });
+  if (userExists)
+    return res.status(400).json({ message: 'User already exists' });
+
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const user = await User.create({
+    name,
+    email,
+    password: hashedPassword,
+  });
+
+  res.status(201).json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    token: generateToken(user._id),
+  });
 });
 
-router.get('/:id', async (req, res) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({ message: 'Invalid action ID' });
-  }
-  try {
-    const action = await Action.findById(req.params.id);
-    if (!action) {
-      return res.status(404).json({ message: 'Action not found' });
-    }
-    res.json(action);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+
+router.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+  if (!user) return res.status(400).json({ message: 'Invalid email or password' });
+
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) return res.status(400).json({ message: 'Invalid email or password' });
+
+  res.json({
+    _id: user._id,
+    name: user.name,
+    email: user.email,
+    token: generateToken(user._id),
+  });
 });
 
-router.post('/', async (req, res) => {
-  const { title, description } = req.body;
-  if (!title || !description) {
-    return res.status(400).json({ message: 'Title and description are required' });
-  }
-  try {
-    const newAction = new Action({ title, description });
-    const savedAction = await newAction.save();
-    res.status(201).json(savedAction);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
 
-router.put('/:id', async (req, res) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({ message: 'Invalid action ID' });
-  }
-  try {
-    const updatedAction = await Action.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      { new: true, runValidators: true }
-    );
-    if (!updatedAction) {
-      return res.status(404).json({ message: 'Action not found' });
-    }
-    res.json(updatedAction);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-});
-
-router.delete('/:id', async (req, res) => {
-  if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-    return res.status(400).json({ message: 'Invalid action ID' });
-  }
-  try {
-    const deletedAction = await Action.findByIdAndDelete(req.params.id);
-    if (!deletedAction) {
-      return res.status(404).json({ message: 'Action not found' });
-    }
-    res.json({ message: 'Action deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+router.get('/me', protect, async (req, res) => {
+  const user = await User.findById(req.user._id).select('-password');
+  res.status(200).json(user);
 });
 
 module.exports = router;
