@@ -1,3 +1,5 @@
+// Handles API logic for POST
+
 import Post from '../models/Post.js';
 
 export const createPost = async (req, res) => {
@@ -18,3 +20,5 @@ export const getAllPosts = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
