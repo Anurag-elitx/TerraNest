@@ -1,6 +1,5 @@
-
-const jwt = require('jsonwebtoken');//create token to verify 
-const bcrypt = require('bcryptjs');   // used for encrypting or decryto password
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
 const User = require('../models/userModel');
 
 const generateToken = (id) => {
@@ -18,12 +17,15 @@ const registerUser = async (req, res) => {
     if (userExists) {
       return res.status(400).json({ message: 'User already exists' });
     }
+
     if (!['public', 'school', 'corporate', 'admin'].includes(role)) {
       return res.status(400).json({ message: 'Invalid role' });
     }
+
     if ((role === 'school' || role === 'corporate') && !req.body.organization) {
       return res.status(400).json({ message: 'Organization is required for school/corporate roles' });
     }
+
     const user = await User.create({
       name,
       email,
@@ -65,6 +67,7 @@ const loginUser = async (req, res) => {
     if (!user.isActive) {
       return res.status(401).json({ message: 'Account is deactivated' });
     }
+
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
@@ -143,4 +146,3 @@ module.exports = {
   getUserProfile,
   updateUserProfile,
 };
-
