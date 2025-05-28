@@ -1,10 +1,9 @@
-import React, { useContext } from 'react';
+import React, { useContext, } from 'react';
 import { Link } from 'react-router-dom';
 import { LeafIcon, BarsIcon } from '../ui/Icons';
-import AuthContext from '../../context/AuthContext';
-
+import { useAuth } from '../../context/AuthContext';
 const Navbar: React.FC = () => {
-  const { user, logout } = useContext(AuthContext);
+const { user, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
 
   return (
@@ -196,7 +195,6 @@ const Navbar: React.FC = () => {
                       logout();
                       setIsMenuOpen(false);
                     }}
-                    className="block w-full text-left px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
                   >
                     Sign out
                   </button>
@@ -226,5 +224,4 @@ const Navbar: React.FC = () => {
     </nav>
   );
 };
-
 export default Navbar;

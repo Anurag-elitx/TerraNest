@@ -2,143 +2,206 @@ import React from 'react';
 
 const PrivacyPage: React.FC = () => {
   return (
-    <div className="bg-white">
-      <div className="max-w-7xl mx-auto py-16 px-4 sm:px-6 lg:py-20 lg:px-8">
-        <div className="max-w-3xl mx-auto">
-          <h1 className="text-3xl font-extrabold text-gray-900 sm:text-4xl">
-            Privacy Policy
-          </h1>
-          <p className="mt-4 text-gray-500">
+    <div className="bg-white min-h-screen">
+      <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
+          <p className="text-lg text-gray-600">
             Last updated: June 15, 2023
           </p>
-          
-          <div className="mt-8 prose prose-green prose-lg text-gray-500">
-            <h2>Introduction</h2>
-            <p>
-              TerraNest ("we", "our", or "us") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our website and services.
+        </div>
+
+        <div className="prose prose-lg max-w-none">
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Introduction</h2>
+            <p className="text-gray-700 leading-relaxed">
+              At TerraNest, we are committed to protecting your privacy and ensuring the security of your personal information. 
+              This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our 
+              platform and services.
             </p>
-            <p>
-              Please read this Privacy Policy carefully. By accessing or using our platform, you acknowledge that you have read, understood, and agree to be bound by all the terms of this Privacy Policy.
-            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Information We Collect</h2>
             
-            <h2>Information We Collect</h2>
-            <h3>Personal Information</h3>
-            <p>
-              We may collect personal information that you voluntarily provide to us when you:
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Personal Information</h3>
+            <p className="text-gray-700 mb-4">
+              We collect information you provide directly to us, such as:
             </p>
-            <ul>
-              <li>Register for an account</li>
-              <li>Complete your profile</li>
-              <li>Participate in challenges or actions</li>
-              <li>Post content in community forums</li>
-              <li>Contact us with inquiries</li>
-              <li>Respond to surveys</li>
-              <li>Subscribe to newsletters</li>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Name and email address when you create an account</li>
+              <li>Profile information including bio, location, and profile picture</li>
+              <li>Organization details for corporate and school accounts</li>
+              <li>Communication preferences and settings</li>
+              <li>Messages and content you post in communities</li>
             </ul>
-            <p>
-              This information may include:
+
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Usage Information</h3>
+            <p className="text-gray-700 mb-4">
+              We automatically collect certain information about your use of our services:
             </p>
-            <ul>
-              <li>Name</li>
-              <li>Email address</li>
-              <li>Password</li>
-              <li>Profile picture</li>
-              <li>Location</li>
-              <li>Organization affiliation</li>
-              <li>Biographical information</li>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Actions you log and challenges you participate in</li>
+              <li>Pages visited and features used</li>
+              <li>Device information and browser type</li>
+              <li>IP address and general location data</li>
+              <li>Cookies and similar tracking technologies</li>
             </ul>
-            
-            <h3>Usage Information</h3>
-            <p>
-              We automatically collect certain information when you visit, use, or navigate our platform. This information does not reveal your specific identity but may include:
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">How We Use Your Information</h2>
+            <p className="text-gray-700 mb-4">
+              We use the information we collect to:
             </p>
-            <ul>
-              <li>Device and browser information</li>
-              <li>IP address</li>
-              <li>Operating system</li>
-              <li>Browsing actions and patterns</li>
-              <li>Referring website</li>
-              <li>Pages viewed</li>
-              <li>Time spent on pages</li>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Provide, maintain, and improve our services</li>
+              <li>Calculate and track your environmental impact</li>
+              <li>Enable community features and facilitate connections</li>
+              <li>Send you updates, newsletters, and important notifications</li>
+              <li>Respond to your comments, questions, and customer service requests</li>
+              <li>Analyze usage patterns to improve user experience</li>
+              <li>Detect, prevent, and address technical issues and security threats</li>
+              <li>Comply with legal obligations and enforce our terms of service</li>
             </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Information Sharing and Disclosure</h2>
             
-            <h2>How We Use Your Information</h2>
-            <p>
-              We use the information we collect for various purposes, including to:
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Public Information</h3>
+            <p className="text-gray-700 mb-4">
+              Some information is public by default:
             </p>
-            <ul>
-              <li>Create and manage your account</li>
-              <li>Provide and maintain our services</li>
-              <li>Personalize your experience</li>
-              <li>Process transactions</li>
-              <li>Send administrative information</li>
-              <li>Respond to inquiries and offer support</li>
-              <li>Request feedback</li>
-              <li>Send marketing and promotional communications</li>
-              <li>Administer contests, promotions, and surveys</li>
-              <li>Protect our services</li>
-              <li>Comply with legal obligations</li>
-              <li>Calculate collective environmental impact</li>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Your profile name and bio</li>
+              <li>Posts and comments in public communities</li>
+              <li>Challenge participation and achievements (unless you opt out)</li>
+              <li>Leaderboard rankings (anonymized unless you opt in)</li>
             </ul>
-            
-            <h2>Disclosure of Your Information</h2>
-            <p>
-              We may share information in the following situations:
+
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Third-Party Services</h3>
+            <p className="text-gray-700 mb-4">
+              We may share information with trusted third parties who assist us in operating our platform:
             </p>
-            <ul>
-              <li><strong>With Service Providers:</strong> We may share your information with third-party vendors, service providers, contractors, or agents who perform services for us.</li>
-              <li><strong>With Affiliated Organizations:</strong> If you are part of an organization on our platform, certain information may be shared with that organization's administrators.</li>
-              <li><strong>With Your Consent:</strong> We may disclose your information for any other purpose with your consent.</li>
-              <li><strong>Business Transfers:</strong> We may share or transfer your information in connection with a merger, acquisition, reorganization, or sale of assets.</li>
-              <li><strong>Legal Requirements:</strong> We may disclose your information where required by law or to protect our rights.</li>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Cloud hosting and data storage providers</li>
+              <li>Analytics and performance monitoring services</li>
+              <li>Email and communication service providers</li>
+              <li>Carbon offset project verification partners</li>
             </ul>
-            
-            <h2>Your Privacy Rights</h2>
-            <p>
-              Depending on your location, you may have certain rights regarding your personal information:
+
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Legal Requirements</h3>
+            <p className="text-gray-700 mb-6">
+              We may disclose your information if required by law, regulation, legal process, or governmental request, 
+              or to protect the rights, property, or safety of TerraNest, our users, or others.
             </p>
-            <ul>
-              <li>Right to access your personal data</li>
-              <li>Right to correct inaccurate information</li>
-              <li>Right to request deletion of your data</li>
-              <li>Right to restrict processing of your data</li>
-              <li>Right to data portability</li>
-              <li>Right to object to processing</li>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Data Security</h2>
+            <p className="text-gray-700 mb-4">
+              We implement appropriate technical and organizational measures to protect your personal information:
+            </p>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Encryption of data in transit and at rest</li>
+              <li>Regular security audits and vulnerability assessments</li>
+              <li>Access controls and authentication requirements</li>
+              <li>Employee training on data protection practices</li>
+              <li>Incident response procedures for security breaches</li>
             </ul>
-            <p>
-              To exercise these rights, please contact us using the information provided at the end of this policy.
-            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Rights and Choices</h2>
             
-            <h2>Data Security</h2>
-            <p>
-              We implement appropriate technical and organizational measures to protect the security of your personal information. However, please be aware that no security system is impenetrable, and we cannot guarantee the absolute security of your data.
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Account Management</h3>
+            <p className="text-gray-700 mb-4">
+              You can access and update your account information at any time through your profile settings.
             </p>
-            
-            <h2>Data Retention</h2>
-            <p>
-              We will retain your personal information only for as long as necessary to fulfill the purposes outlined in this Privacy Policy, unless a longer retention period is required or permitted by law.
+
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Privacy Controls</h3>
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Choose what information is public on your profile</li>
+              <li>Control email notification preferences</li>
+              <li>Opt out of leaderboards and public rankings</li>
+              <li>Manage community participation settings</li>
+            </ul>
+
+            <h3 className="text-xl font-medium text-gray-900 mb-3">Data Rights</h3>
+            <p className="text-gray-700 mb-4">
+              Depending on your location, you may have the right to:
             </p>
-            
-            <h2>Children's Privacy</h2>
-            <p>
-              Our services are not directed to individuals under the age of 13. We do not knowingly collect personal information from children. If you become aware that a child has provided us with personal information, please contact us.
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Request access to your personal information</li>
+              <li>Correct inaccurate or incomplete data</li>
+              <li>Request deletion of your personal information</li>
+              <li>Object to or restrict certain processing activities</li>
+              <li>Data portability for information you've provided</li>
+            </ul>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Cookies and Tracking</h2>
+            <p className="text-gray-700 mb-4">
+              We use cookies and similar technologies to:
             </p>
-            
-            <h2>Changes to This Privacy Policy</h2>
-            <p>
-              We may update this Privacy Policy from time to time. The updated version will be indicated by an updated "Last Updated" date. We encourage you to review this Privacy Policy frequently to stay informed about how we are protecting your information.
+            <ul className="list-disc pl-6 text-gray-700 mb-6">
+              <li>Remember your preferences and settings</li>
+              <li>Analyze site traffic and usage patterns</li>
+              <li>Provide personalized content and recommendations</li>
+              <li>Improve site performance and user experience</li>
+            </ul>
+            <p className="text-gray-700 mb-6">
+              You can control cookie settings through your browser preferences. Note that disabling certain 
+              cookies may affect the functionality of our services.
             </p>
-            
-            <h2>Contact Us</h2>
-            <p>
-              If you have questions or comments about this Privacy Policy, please contact us at:
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Children's Privacy</h2>
+            <p className="text-gray-700 mb-6">
+              Our services are not intended for children under 13 years of age. We do not knowingly collect 
+              personal information from children under 13. If you are a parent or guardian and believe your 
+              child has provided us with personal information, please contact us immediately.
             </p>
-            <p>
-              TerraNest<br />
-              Email: privacy@terranest.com<br />
-              Address: 123 Green Street, Eco City, EC 12345
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">International Data Transfers</h2>
+            <p className="text-gray-700 mb-6">
+              Your information may be transferred to and processed in countries other than your own. 
+              We ensure appropriate safeguards are in place to protect your personal information in 
+              accordance with applicable data protection laws.
             </p>
-          </div>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Changes to This Policy</h2>
+            <p className="text-gray-700 mb-6">
+              We may update this Privacy Policy from time to time. We will notify you of any material 
+              changes by posting the new policy on this page and updating the "Last updated" date. 
+              We encourage you to review this policy periodically.
+            </p>
+          </section>
+
+          <section className="mb-8">
+            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Us</h2>
+            <p className="text-gray-700 mb-4">
+              If you have any questions about this Privacy Policy or our data practices, please contact us:
+            </p>
+            <div className="bg-gray-50 p-4 rounded-lg">
+              <p className="text-gray-700 mb-2">
+                <strong>Email:</strong> privacy@terranest.com
+              </p>
+              <p className="text-gray-700 mb-2">
+                <strong>Address:</strong> 123 Green Street, San Francisco, CA 94102
+              </p>
+              <p className="text-gray-700">
+                <strong>Phone:</strong> +1 (555) 123-4567
+              </p>
+            </div>
+          </section>
         </div>
       </div>
     </div>

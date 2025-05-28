@@ -1,9 +1,8 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { LeafIcon, ChartLineIcon, UsersIcon, TreeIcon } from '../components/ui/Icons';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
-// Mock data for the dashboard
 const mockStats = {
   totalEmissionSaved: 1250,
   actionsCompleted: 48,
@@ -30,7 +29,7 @@ const mockCommunityUpdates = [
 ];
 
 const DashboardPage: React.FC = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [stats, setStats] = useState(mockStats);
   const [recentActions, setRecentActions] = useState(mockRecentActions);
   const [activeChallenges, setActiveChallenges] = useState(mockActiveChallenges);

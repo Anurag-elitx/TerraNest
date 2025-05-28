@@ -1,38 +1,36 @@
-import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import { toast } from 'react-toastify';
-import { API_URL } from '../config';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { authAPI } from '../services/api';
 
-interface User {
+export interface User {
   _id: string;
+  id: string;
   name: string;
   email: string;
-  role: 'public' | 'school' | 'corporate' | 'admin';
+  role: string;
   profilePicture?: string;
   organization?: string;
-  token: string;
+  totalEmissionSaved: number;
+  actionsCompleted: number;
+  challengesJoined: number;
 }
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
-  loading: boolean;
-  error: string | null;
   login: (email: string, password: string) => Promise<void>;
   register: (userData: any) => Promise<void>;
   logout: () => void;
-  updateProfile: (userData: any) => Promise<void>;
+  loading: boolean;
 }
 
-export const AuthContext = createContext<AuthContextType>({
-  user: null,
-  loading: false,
-  error: null,
-  login: async () => {},
-  register: async () => {},
-  logout: () => {},
-  updateProfile: async () => {},
-});
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error('useAuth must be used within an AuthProvider');
+  }
+  return context;
+};
 
 interface AuthProviderProps {
   children: ReactNode;
@@ -40,117 +38,76 @@ interface AuthProviderProps {
 
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Check if user is logged in
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem('token');
+    if (token) {
+      loadUser();
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
-  const login = async (email: string, password: string) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await axios.post(`${API_URL}/api/auth/login`, {
-        email,
-        password,
-      });
-      
-      const userData = response.data;
-      setUser(userData);
-      localStorage.setItem('user', JSON.stringify(userData));
-      
-      // Set auth token for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
-      
-      toast.success('Login successful!');
-      navigate('/dashboard');
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Login failed';
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+const loadUser = async () => {
+  try {
+    const userData = await authAPI.getProfile();
+    setUser({
+      ...userData,
+      id: userData._id || userData.id, // Handle both cases
+    });
+  } catch (error) {
+    localStorage.removeItem('token');
+  } finally {
+    setLoading(false);
+  }
+};
 
-  const register = async (userData: any) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await axios.post(`${API_URL}/api/auth/register`, userData);
-      
-      const newUser = response.data;
-      setUser(newUser);
-      localStorage.setItem('user', JSON.stringify(newUser));
-      
-      // Set auth token for future requests
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newUser.token}`;
-      
-      toast.success('Registration successful!');
-      navigate('/dashboard');
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Registration failed';
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+const login = async (email: string, password: string) => {
+  try {
+    const data = await authAPI.login(email, password);
+    localStorage.setItem('token', data.token);
+    setUser({
+      ...data.user,
+      id: data.user._id || data.user.id,
+    });
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Login failed');
+  }
+};
+
+
+const register = async (userData: any) => {
+  try {
+    const data = await authAPI.register(userData);
+    localStorage.setItem('token', data.token);
+    setUser({
+      ...data.user,
+      id: data.user._id || data.user.id,
+    });
+  } catch (error: any) {
+    throw new Error(error.response?.data?.message || 'Registration failed');
+  }
+};
+
+
 
   const logout = () => {
+    localStorage.removeItem('token');
     setUser(null);
-    localStorage.removeItem('user');
-    delete axios.defaults.headers.common['Authorization'];
-    toast.info('Logged out successfully');
-    navigate('/');
   };
 
-  const updateProfile = async (userData: any) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await axios.put(`${API_URL}/api/auth/profile`, userData, {
-        headers: {
-          Authorization: `Bearer ${user?.token}`,
-        },
-      });
-      
-      const updatedUser = { ...user, ...response.data };
-      setUser(updatedUser);
-      localStorage.setItem('user', JSON.stringify(updatedUser));
-      
-      toast.success('Profile updated successfully!');
-    } catch (err: any) {
-      const message = err.response?.data?.message || 'Profile update failed';
-      setError(message);
-      toast.error(message);
-    } finally {
-      setLoading(false);
-    }
+  const value: AuthContextType = {
+    user,
+    login,
+    register,
+    logout,
+    loading,
   };
 
   return (
-    <AuthContext.Provider
-      value={{
-        user,
-        loading,
-        error,
-        login,
-        register,
-        logout,
-        updateProfile,
-      }}
-    >
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );

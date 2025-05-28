@@ -1,8 +1,46 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import { useAuth } from '../context/AuthContext';
+import communityService, { Community as CommunityType, CreateCommunityData } from '../services/communityService';
+import postService, { Post as PostType, CreatePostData } from '../services/postService';
 
-// Mock data for communities
+interface Community {
+  id: number;
+  name: string;
+  description: string;
+  category: string;
+  members: number;
+  postCount: number;
+  image: string;
+  isJoined: boolean;
+  isAdmin: boolean;
+  posts: number;
+  events: number;
+  createdAt: string;
+}
+
+interface Post {
+  id: string;
+  communityId: number;
+  title: string;
+  content: string;
+  user: {
+    id: number;
+    name: string;
+    profilePicture: string;
+  };
+  createdAt: string;
+  date: string;
+  likes: string[];
+  comments: string[];
+  image?: string;
+  organization?: {
+    id: string;
+    name: string;
+}
+}
+
 const mockCommunities = [
   {
     id: 1,
@@ -10,11 +48,13 @@ const mockCommunities = [
     description: "A community of students and faculty working to make our campus more sustainable.",
     category: "education",
     members: 156,
+    postCount: 45, 
     image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: true,
     isAdmin: false,
-    posts: 45,
-    events: 3
+    posts: 5,
+    events: 3,
+    createdAt: "2023-06-01T00:00:00Z"
   },
   {
     id: 2,
@@ -22,11 +62,13 @@ const mockCommunities = [
     description: "Growing food and community in urban spaces. Share tips, harvests, and gardening wisdom.",
     category: "gardening",
     members: 342,
+    postCount: 128,
     image: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: true,
     isAdmin: true,
-    posts: 128,
-    events: 5
+    posts: 12,
+    events: 4,
+    createdAt: "2024-08-01T00:00:00Z"
   },
   {
     id: 3,
@@ -34,11 +76,13 @@ const mockCommunities = [
     description: "Tips and support for reducing waste in everyday life. From beginners to experts.",
     category: "lifestyle",
     members: 892,
+    postCount: 256,
     image: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: false,
     isAdmin: false,
-    posts: 256,
-    events: 2
+    posts: 8,
+    events: 2,
+    createdAt: "2025-01-01T00:00:00Z"
   },
   {
     id: 4,
@@ -46,11 +90,13 @@ const mockCommunities = [
     description: "Promoting renewable energy solutions and policy changes for a sustainable future.",
     category: "energy",
     members: 215,
+    postCount: 89,
     image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: false,
     isAdmin: false,
-    posts: 89,
-    events: 1
+    posts: 38,
+    events: 1,
+    createdAt: "2022-10-01T00:00:00Z"
   },
   {
     id: 5,
@@ -58,11 +104,13 @@ const mockCommunities = [
     description: "Discussing alternatives to car-dependent lifestyles: cycling, public transit, EVs, and more.",
     category: "transport",
     members: 178,
+    postCount: 412,
     image: "https://images.unsplash.com/photo-1519583272095-6433daf26b6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: false,
     isAdmin: false,
-    posts: 67,
-    events: 2
+    posts: 120,
+    events: 2,
+    createdAt: "2019-12-01T00:00:00Z"
   },
   {
     id: 6,
@@ -70,25 +118,34 @@ const mockCommunities = [
     description: "Raising environmentally conscious children while minimizing your family's footprint.",
     category: "lifestyle",
     members: 423,
+    postCount: 143,
     image: "https://images.unsplash.com/photo-1536640712-4d4c36ff0e4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
     isJoined: false,
     isAdmin: false,
-    posts: 143,
-    events: 4
+    posts: 43,
+    events: 4,
+    createdAt: "2025-04-01T00:00:00Z"
   }
 ];
 
-// Mock data for posts
-const mockPosts = [
+const mockPosts= [
   {
-    id: 1,
+    id: "1",
     communityId: 1,
     title: "Campus Cleanup Day Results",
     content: "Thanks to everyone who participated in our campus cleanup day! We collected over 200 pounds of trash and recyclables.",
     user: {
-      id: 101,
+      id: "101",
       name: "Jamie Smith",
-      profilePicture: "https://randomuser.me/api/portraits/women/65.jpg"
+      profilePicture: "https://randomuser.me/api/portraits/women/65.jpg",
+      createdAt: "2023-06-15T14:32:00Z",
+      likes: ["102", "103", "104"],
+      comments: ["1", "2", "3"],
+      image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+      organization: {
+      id: "1",
+      name: "Green Campus Initiative"
+    }
     },
     date: "2023-06-15T14:32:00Z",
     likes: 24,
@@ -96,14 +153,22 @@ const mockPosts = [
     image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
   },
   {
-    id: 2,
+    id: "2",
     communityId: 2,
     title: "Summer Harvest Share",
     content: "Our community garden is producing more than we can eat! Join us this Saturday for a harvest share. Bring your extra produce to trade!",
     user: {
-      id: 102,
+      id: "102",
       name: "Miguel Rodriguez",
-      profilePicture: "https://randomuser.me/api/portraits/men/42.jpg"
+      profilePicture: "https://randomuser.me/api/portraits/men/42.jpg",
+      createdAt: "2023-06-15T14:32:00Z",
+      likes: ["102", "103", "104"],
+      comments: ["1", "2", "3"],
+      image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+      organization: {
+      id: "2",
+      name: "Summer Harvest Share"
+    }
     },
     date: "2023-06-14T09:15:00Z",
     likes: 37,
@@ -111,14 +176,22 @@ const mockPosts = [
     image: "https://images.unsplash.com/photo-1474440692490-2e83ae13ba29?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80"
   },
   {
-    id: 3,
+    id: "3",
     communityId: 1,
     title: "New Solar Panels Installation",
     content: "The university has approved our proposal for solar panels on the science building! Installation begins next month.",
     user: {
-      id: 103,
+      id: "103",
       name: "Sarah Johnson",
-      profilePicture: "https://randomuser.me/api/portraits/women/22.jpg"
+      profilePicture: "https://randomuser.me/api/portraits/women/22.jpg",
+      createdAt: "2023-06-15T14:32:00Z",
+      likes: ["102", "103", "104"],
+      comments: ["1", "2", "3"],
+      image: "https://images.unsplash.com/photo-1563089145-599997674d42?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+      organization: {
+      id: "3",
+      name: "New Solar Panels Installation"
+    }
     },
     date: "2023-06-12T16:45:00Z",
     likes: 52,
@@ -128,10 +201,11 @@ const mockPosts = [
 ];
 
 const CommunityPage: React.FC = () => {
-  const { user } = useContext(AuthContext);
-  const [communities, setCommunities] = useState(mockCommunities);
-  const [posts, setPosts] = useState(mockPosts);
-  const [selectedCommunity, setSelectedCommunity] = useState<any>(null);
+  const { user } = useAuth();
+  const [communities, setCommunities] = useState<Community[]>([]);
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedCommunity, setSelectedCommunity] = useState<Community | null>(null);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -139,35 +213,87 @@ const CommunityPage: React.FC = () => {
   const [showPostModal, setShowPostModal] = useState(false);
   const [activeTab, setActiveTab] = useState('communities');
   
-  // Form states
-  const [newCommunityName, setNewCommunityName] = useState('');
-  const [newCommunityDescription, setNewCommunityDescription] = useState('');
-  const [newCommunityCategory, setNewCommunityCategory] = useState('lifestyle');
-  const [newCommunityImage, setNewCommunityImage] = useState('');
+  const [newCommunityData, setNewCommunityData] = useState<CreateCommunityData>({
+    name: '',
+    description: '',
+    category: 'lifestyle',
+    image: ''
+  });
   
-  const [newPostTitle, setNewPostTitle] = useState('');
-  const [newPostContent, setNewPostContent] = useState('');
-  const [newPostCommunity, setNewPostCommunity] = useState('');
-  const [newPostImage, setNewPostImage] = useState('');
+  const [newPostData, setNewPostData] = useState<CreatePostData>({
+    title: '',
+    content: '',
+    organization: '',
+    images: []
+  });
   
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [joinedCommunities, setJoinedCommunities] = useState<Community[]>([]);
+  const [adminCommunities, setAdminCommunities] = useState<Community[]>([]);
 
-  const filteredCommunities = communities.filter(community => {
+  useEffect(() => {
+    fetchCommunities();
+    if (user) {
+      fetchUserCommunities();
+    }
+  }, [selectedCategory, searchQuery, user]);
+
+  useEffect(() => {
+    if (activeTab === 'feed' && user) {
+      fetchUserFeed();
+    }
+  }, [activeTab, user]);
+
+  const fetchCommunities = async () => {
+    try {
+      setLoading(true);
+      const response = await communityService.getCommunities({
+        category: selectedCategory === 'all' ? undefined : selectedCategory,
+        search: searchQuery || undefined
+      });
+      setCommunities(response.communities);
+    } catch (error) {
+      console.error('Error fetching communities:', error);
+      toast.error('Failed to load communities');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchUserCommunities = async () => {
+    try {
+      const [joinedResponse, adminResponse] = await Promise.all([
+        communityService.getUserCommunities('joined'),
+        communityService.getUserCommunities('admin')
+      ]);
+      setJoinedCommunities(joinedResponse.communities);
+      setAdminCommunities(adminResponse.communities);
+    } catch (error) {
+      console.error('Error fetching user communities:', error);
+    }
+  };
+
+  const fetchUserFeed = async () => {
+    try {
+      setLoading(true);
+      const response = await postService.getUserFeed();
+      setPosts(response.posts);
+    } catch (error) {
+      console.error('Error fetching user feed:', error);
+      toast.error('Failed to load feed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const filteredCommunities = communities.filter((community) => {
     const matchesCategory = selectedCategory === 'all' || community.category === selectedCategory;
     const matchesSearch = community.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           community.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
 
-  const joinedCommunities = communities.filter(community => community.isJoined);
-  
-  const adminCommunities = communities.filter(community => community.isAdmin);
-
-  const getCommunityPosts = (communityId: number) => {
-    return posts.filter(post => post.communityId === communityId);
-  };
-
-  const handleJoinCommunity = (community: any) => {
+  const handleJoinCommunity = (community: Community) => {
     setSelectedCommunity(community);
     setShowJoinModal(true);
   };
@@ -178,26 +304,23 @@ const CommunityPage: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Example:
-      // const response = await api.post(`/communities/${selectedCommunity.id}/join`);
+      await communityService.joinCommunity(String(selectedCommunity.id));
       
-      // Mock the response
-      setTimeout(() => {
-        setCommunities(communities.map(community => 
-          community.id === selectedCommunity.id 
-            ? { ...community, isJoined: true, members: community.members + 1 } 
-            : community
-        ));
-        
-        setShowJoinModal(false);
-        setSelectedCommunity(null);
-        setIsSubmitting(false);
-        
-        alert(`You've successfully joined "${selectedCommunity.name}"!`);
-      }, 1000);
-    } catch (error) {
+      setCommunities(communities.map(community => 
+        community.id === selectedCommunity.id 
+          ? { ...community, members: (community.members || 0) + 1 } 
+          : community
+      ));
+      
+      await fetchUserCommunities();
+      
+      setShowJoinModal(false);
+      setSelectedCommunity(null);
+      toast.success(`You've successfully joined "${selectedCommunity.name}"!`);
+    } catch (error: any) {
       console.error('Error joining community:', error);
-      alert('Failed to join community. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to join community');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -206,71 +329,51 @@ const CommunityPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to leave this community?')) return;
     
     try {
-      // Example:
-      // const response = await api.post(`/communities/${communityId}/leave`);
+      await communityService.leaveCommunity(String(communityId));
       
-      // Mock the response
       setCommunities(communities.map(community => 
         community.id === communityId 
-          ? { ...community, isJoined: false, members: community.members - 1 } 
+          ? { ...community, members: (community.members || 0) - 1 } 
           : community
       ));
       
-      alert('You have left the community.');
-    } catch (error) {
+      await fetchUserCommunities();
+      
+      toast.success('You have left the community.');
+    } catch (error: any) {
       console.error('Error leaving community:', error);
-      alert('Failed to leave community. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to leave community');
     }
   };
 
-  const handleCreateCommunity = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleCreateCommunity = async (e: React.FormEvent) => {    e.preventDefault();
     
-    if (!newCommunityName || !newCommunityDescription) {
-      alert('Please fill in all required fields.');
+    if (!newCommunityData.name || !newCommunityData.description) {
+      toast.error('Please fill in all required fields.');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      // Example:
-      // const response = await api.post('/communities', {
-      //   name: newCommunityName,
-      //   description: newCommunityDescription,
-      //   category: newCommunityCategory,
-      //   image: newCommunityImage
-      // });
+      const newCommunity = await communityService.createCommunity(newCommunityData);
       
-      // Mock the response
-      setTimeout(() => {
-        const newCommunity = {
-          id: communities.length + 1,
-          name: newCommunityName,
-          description: newCommunityDescription,
-          category: newCommunityCategory,
-          members: 1,
-          image: newCommunityImage || `https://source.unsplash.com/random/800x600/?${newCommunityCategory}`,
-          isJoined: true,
-          isAdmin: true,
-          posts: 0,
-          events: 0
-        };
-        
-        setCommunities([newCommunity, ...communities]);
-        
-        setShowCreateModal(false);
-        setNewCommunityName('');
-        setNewCommunityDescription('');
-        setNewCommunityCategory('lifestyle');
-        setNewCommunityImage('');
-        setIsSubmitting(false);
-        
-        alert(`Community "${newCommunityName}" has been created!`);
-      }, 1000);
-    } catch (error) {
+      setCommunities([newCommunity, ...communities]);
+      await fetchUserCommunities();
+      
+      setShowCreateModal(false);
+      setNewCommunityData({
+        name: '',
+        description: '',
+        category: 'lifestyle',
+        image: ''
+      });
+      
+      toast.success(`Community "${newCommunityData.name}" has been created!`);
+    } catch (error: any) {
       console.error('Error creating community:', error);
-      alert('Failed to create community. Please try again.');
+      toast.error(error.response?.data?.message || 'Failed to create community');
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -278,62 +381,64 @@ const CommunityPage: React.FC = () => {
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!newPostTitle || !newPostContent || !newPostCommunity) {
-      alert('Please fill in all required fields.');
+    if (!newPostData.title || !newPostData.content || !newPostData.organization) {
+      toast.error('Please fill in all required fields.');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      // Example:
-      // const response = await api.post('/posts', {
-      //   title: newPostTitle,
-      //   content: newPostContent,
-      //   communityId: newPostCommunity,
-      //   image: newPostImage
-      // });
+      const newPost = await postService.createPost(newPostData);
       
-      // Mock the response
-      setTimeout(() => {
-        const communityId = parseInt(newPostCommunity);
-        const newPost = {
-          id: posts.length + 1,
-          communityId,
-          title: newPostTitle,
-          content: newPostContent,
-          user: {
-            id: user?._id ? Number(user._id) : 999,
-            name: user?.name || 'Current User',
-            profilePicture: user?.profilePicture || 'https://randomuser.me/api/portraits/lego/1.jpg'
-          },
-          date: new Date().toISOString(),
-          likes: 0,
-          comments: 0,
-          image: newPostImage || ''
-        };
-        
+      if (activeTab === 'feed') {
         setPosts([newPost, ...posts]);
-        
-        setCommunities(communities.map(community => 
-          community.id === communityId 
-            ? { ...community, posts: community.posts + 1 } 
-            : community
-        ));
-        
-        setShowPostModal(false);
-        setNewPostTitle('');
-        setNewPostContent('');
-        setNewPostCommunity('');
-        setNewPostImage('');
-        setIsSubmitting(false);
-        
-        alert('Your post has been published!');
-      }, 1000);    } catch (error) {      console.error('Error creating post:', error);
-      alert('Failed to create post. Please try again.');
+      }
+      
+      setShowPostModal(false);
+      setNewPostData({
+        title: '',
+        content: '',
+        organization: '',
+        images: []
+      });
+      
+      toast.success('Your post has been published!');
+    } catch (error: any) {
+      console.error('Error creating post:', error);
+      toast.error(error.response?.data?.message || 'Failed to create post');
+    } finally {
       setIsSubmitting(false);
     }
   };
+
+const handleToggleLike = async (postId: string) => { 
+  if (!user) {
+    toast.error('Please login to like posts');
+    return;
+  }
+
+  try {
+    setPosts(posts.map(post => {
+      if (post.id === postId) {
+        const isLiked = post.likes.includes(user.id || '');
+        return {
+          ...post,
+          likes: isLiked
+            ? post.likes.filter(id => id !== user.id)
+            : [...post.likes, user.id || '']
+        };
+      }
+      return post;
+    }));
+
+    // In a real app, you would call your API here
+    // await postService.toggleLike(postId);
+  } catch (error) {
+    console.error('Error toggling like:', error);
+    toast.error('Failed to update like');
+  }
+};
 
   const getCategoryColor = (category: string) => {
     switch (category) {
@@ -351,6 +456,14 @@ const CommunityPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -483,75 +596,71 @@ const CommunityPage: React.FC = () => {
         {/* Communities Grid */}
         {activeTab === 'communities' && (
           <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredCommunities.map((community) => (
-              <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
-                <div className="h-48 w-full relative">
-                  <img 
-                    src={community.image} 
-                    alt={community.name}
-                    className="h-full w-full object-cover"
-                  />
-                  <div className="absolute top-0 right-0 mt-2 mr-2">
-                    <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(community.category)}`}>
-                      {community.category}
-                    </span>
+            {filteredCommunities.map((community) => {
+              const isJoined = joinedCommunities.some(c => c.id === community.id);
+              return (
+                <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
+                  <div className="h-48 w-full relative">
+                    <img 
+                      src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
+                      alt={community.name}
+                      className="h-full w-full object-cover"
+                    />
+                    <div className="absolute top-0 right-0 mt-2 mr-2">
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(community.category)}`}>
+                        {community.category}
+                      </span>
+                    </div>
                   </div>
-                </div>
-                <div className="p-5">
-                  <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                  <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
-                  
-                  <div className="mt-4 flex items-center text-sm text-gray-500">
-                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                    </svg>
-                    <span>{community.members} members</span>
-                  </div>
-                  
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
-                    </svg>
-                    <span>{community.posts} posts</span>
-                  </div>
-                  
-                  <div className="mt-2 flex items-center text-sm text-gray-500">
-                    <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clipRule="evenodd" />
-                    </svg>
-                    <span>{community.events} upcoming events</span>
-                  </div>
-                  
-                  <div className="mt-4 flex justify-between items-center">
-                    {community.isJoined ? (
-                      <button
-                        onClick={() => handleLeaveCommunity(community.id)}
-                        className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                      >
-                        Leave
-                      </button>
-                    ) : (
-                      <button
-                        onClick={() => handleJoinCommunity(community)}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                      >
-                        Join Community
-                      </button>
-                    )}
+                  <div className="p-5">
+                    <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
+                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
                     
-                    <Link
-                      to={`/community/${community.id}`}
-                      className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
-                    >
-                      View Details
-                      <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    <div className="mt-4 flex items-center text-sm text-gray-500">
+                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                       </svg>
-                    </Link>
+                      <span>{community.postCount} posts</span>
+                    </div>
+                    
+                    <div className="mt-2 flex items-center text-sm text-gray-500">
+                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+                      </svg>
+                      <span>{community.postCount} posts</span>
+                    </div>
+                    
+                    <div className="mt-4 flex justify-between items-center">
+                      {isJoined ? (
+                        <button
+                          onClick={() => handleLeaveCommunity(community.id)}
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        >
+                          Leave
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => handleJoinCommunity(community)}
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                        >
+                          Join Community
+                        </button>
+                      )}
+                      
+                      <Link
+                        to={`/community/${community.id}`}
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
+                      >
+                        View Details
+                        <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        </svg>
+                      </Link>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
 
@@ -565,59 +674,62 @@ const CommunityPage: React.FC = () => {
                 ).filter(c => 
                   c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   c.description.toLowerCase().includes(searchQuery.toLowerCase())
-                ).map((community) => (
-                  <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
-                    <div className="h-48 w-full relative">
-                      <img 
-                        src={community.image} 
-                        alt={community.name}
-                        className="h-full w-full object-cover"
-                      />
-                      <div className="absolute top-0 right-0 mt-2 mr-2">
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(community.category)}`}>
-                          {community.category}
-                        </span>
-                      </div>
-                      {community.isAdmin && (
-                        <div className="absolute top-0 left-0 mt-2 ml-2">
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-white">
-                            Admin
+                ).map((community) => {
+                  const isAdmin = adminCommunities.some(c => c.id === community.id);
+                  return (
+                    <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
+                      <div className="h-48 w-full relative">
+                        <img 
+                          src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
+                          alt={community.name}
+                          className="h-full w-full object-cover"
+                        />
+                        <div className="absolute top-0 right-0 mt-2 mr-2">
+                          <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(community.category)}`}>
+                            {community.category}
                           </span>
                         </div>
-                      )}
-                    </div>
-                    <div className="p-5">
-                      <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
-                      
-                      <div className="mt-4 flex items-center text-sm text-gray-500">
-                        <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
-                        </svg>
-                        <span>{community.members} members</span>
+                        {isAdmin && (
+                          <div className="absolute top-0 left-0 mt-2 ml-2">
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-white">
+                              Admin
+                            </span>
+                          </div>
+                        )}
                       </div>
-                      
-                      <div className="mt-4 flex justify-between items-center">
-                        <button
-                          onClick={() => handleLeaveCommunity(community.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
-                        >
-                          Leave
-                        </button>
+                      <div className="p-5">
+                        <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
+                        <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
                         
-                        <Link
-                          to={`/community/${community.id}`}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
-                        >
-                          View Details
-                          <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                            <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                        <div className="mt-4 flex items-center text-sm text-gray-500">
+                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                           </svg>
-                        </Link>
+                          <span>{community.postCount} posts</span>
+                        </div>
+                        
+                        <div className="mt-4 flex justify-between items-center">
+                          <button
+                            onClick={() => handleLeaveCommunity(community.id)}
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                          >
+                            Leave
+                          </button>
+                          
+                          <Link
+                            to={`/community/${community.id}`}
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
+                          >
+                            View Details
+                            <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                              <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </Link>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             ) : (
               <div className="text-center py-12 bg-white shadow rounded-lg">
@@ -655,7 +767,7 @@ const CommunityPage: React.FC = () => {
                   <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
                     <div className="h-48 w-full relative">
                       <img 
-                        src={community.image} 
+                        src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
                         alt={community.name}
                         className="h-full w-full object-cover"
                       />
@@ -678,7 +790,7 @@ const CommunityPage: React.FC = () => {
                         <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                         </svg>
-                        <span>{community.members} members</span>
+                        <span>{community.postCount} posts</span>
                       </div>
                       
                       <div className="mt-4 flex justify-between items-center">
@@ -731,7 +843,8 @@ const CommunityPage: React.FC = () => {
             {posts.length > 0 ? (
               <div className="space-y-6">
                 {posts.map((post) => {
-                  const community = communities.find(c => c.id === post.communityId);
+                  const community = communities.find(c => c.id.toString() === post.organization?.id);
+                  const isLiked = post.likes.includes(user?.id || '');
                   return (
                     <div key={post.id} className="bg-white shadow overflow-hidden sm:rounded-lg">
                       <div className="px-4 py-5 sm:px-6">
@@ -746,16 +859,16 @@ const CommunityPage: React.FC = () => {
                             <div className="flex items-center text-sm text-gray-500">
                               <span>{post.user.name}</span>
                               <span className="mx-1">•</span>
-                              <span>{new Date(post.date).toLocaleDateString()}</span>
+                              <span>{new Date(post.createdAt).toLocaleDateString()}</span>
                               <span className="mx-1">•</span>
-                              <span>in {community?.name || 'Unknown Community'}</span>
+                              <span>in {post.organization?.name || 'Unknown Community'}</span>
                             </div>
                           </div>
                         </div>
                       </div>
                       <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
                         <p className="text-sm text-gray-600">{post.content}</p>
-                        
+        
                         {post.image && (
                           <div className="mt-4">
                             <img 
@@ -765,31 +878,35 @@ const CommunityPage: React.FC = () => {
                             />
                           </div>
                         )}
-                        
-                        <div className="mt-4 flex items-center space-x-4">
-                          <button className="flex items-center text-sm text-gray-500 hover:text-gray-700">
-                            <svg className="h-5 w-5 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
-                            </svg>
-                            {post.likes} Likes
-                          </button>
-                          <button className="flex items-center text-sm text-gray-500 hover:text-gray-700">
-                            <svg className="h-5 w-5 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
-                            </svg>
-                            {post.comments} Comments
-                          </button>
-                          <button className="flex items-center text-sm text-gray-500 hover:text-gray-700">
-                            <svg className="h-5 w-5 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
-                            </svg>
-                            Share
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+        
+        <div className="mt-4 flex items-center space-x-4">
+          <button
+            onClick={() => handleToggleLike(post.id)}
+            className={`flex items-center text-sm ${isLiked ? 'text-primary' : 'text-gray-500'} hover:text-primary`}
+          >
+            <svg className={`h-5 w-5 mr-1 ${isLiked ? 'text-primary' : 'text-gray-400'}`} xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z" />
+            </svg>
+            {post.likes.length} Likes
+          </button>
+          <button className="flex items-center text-sm text-gray-500 hover:text-gray-700">
+            <svg className="h-5 w-5 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
+            </svg>
+            {post.comments.length} Comments
+          </button>
+          <button className="flex items-center text-sm text-gray-500 hover:text-gray-700">
+            <svg className="h-5 w-5 mr-1 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M15 8a3 3 0 10-2.977-2.63l-4.94 2.47a3 3 0 100 4.319l4.94 2.47a3 3 0 10.895-1.789l-4.94-2.47a3.027 3.027 0 000-.74l4.94-2.47C13.456 7.68 14.19 8 15 8z" />
+            </svg>
+            Share
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+})}
+
               </div>
             ) : (
               <div className="text-center py-12 bg-white shadow rounded-lg">
@@ -870,8 +987,8 @@ const CommunityPage: React.FC = () => {
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="e.g., Urban Gardeners Network"
-                      value={newCommunityName}
-                      onChange={(e) => setNewCommunityName(e.target.value)}
+                      value={newCommunityData.name}
+                      onChange={(e) => setNewCommunityData({...newCommunityData, name: e.target.value})}
                     />
                   </div>
                 </div>
@@ -887,8 +1004,8 @@ const CommunityPage: React.FC = () => {
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="What is this community about?"
-                      value={newCommunityDescription}
-                      onChange={(e) => setNewCommunityDescription(e.target.value)}
+                      value={newCommunityData.description}
+                      onChange={(e) => setNewCommunityData({...newCommunityData, description: e.target.value})}
                     ></textarea>
                   </div>
                 </div>
@@ -902,8 +1019,8 @@ const CommunityPage: React.FC = () => {
                       name="community-category"
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
-                      value={newCommunityCategory}
-                      onChange={(e) => setNewCommunityCategory(e.target.value)}
+                      value={newCommunityData.category}
+                      onChange={(e) => setNewCommunityData({...newCommunityData, category: e.target.value})}
                     >
                       <option value="education">Education</option>
                       <option value="gardening">Gardening</option>
@@ -924,8 +1041,8 @@ const CommunityPage: React.FC = () => {
                       id="community-image"
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="https://example.com/image.jpg"
-                      value={newCommunityImage}
-                      onChange={(e) => setNewCommunityImage(e.target.value)}
+                      value={newCommunityData.image}
+                      onChange={(e) => setNewCommunityData({...newCommunityData, image: e.target.value})}
                     />
                   </div>
                   <p className="mt-1 text-xs text-gray-500">
@@ -945,10 +1062,12 @@ const CommunityPage: React.FC = () => {
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:col-start-1 sm:text-sm"
                     onClick={() => {
                       setShowCreateModal(false);
-                      setNewCommunityName('');
-                      setNewCommunityDescription('');
-                      setNewCommunityCategory('lifestyle');
-                      setNewCommunityImage('');
+                      setNewCommunityData({
+                        name: '',
+                        description: '',
+                        category: 'lifestyle',
+                        image: ''
+                      });
                     }}
                   >
                     Cancel
@@ -990,8 +1109,8 @@ const CommunityPage: React.FC = () => {
                       name="post-community"
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
-                      value={newPostCommunity}
-                      onChange={(e) => setNewPostCommunity(e.target.value)}
+                      value={newPostData.organization}
+                      onChange={(e) => setNewPostData({...newPostData, organization: e.target.value})}
                     >
                       <option value="">Select a community</option>
                       {joinedCommunities.map(community => (
@@ -1017,8 +1136,8 @@ const CommunityPage: React.FC = () => {
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="Give your post a title"
-                      value={newPostTitle}
-                      onChange={(e) => setNewPostTitle(e.target.value)}
+                      value={newPostData.title}
+                      onChange={(e) => setNewPostData({...newPostData, title: e.target.value})}
                     />
                   </div>
                 </div>
@@ -1034,8 +1153,8 @@ const CommunityPage: React.FC = () => {
                       required
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="What would you like to share?"
-                      value={newPostContent}
-                      onChange={(e) => setNewPostContent(e.target.value)}
+                      value={newPostData.content}
+                      onChange={(e) => setNewPostData({...newPostData, content: e.target.value})}
                     ></textarea>
                   </div>
                 </div>
@@ -1050,8 +1169,8 @@ const CommunityPage: React.FC = () => {
                       id="post-image"
                       className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md"
                       placeholder="https://example.com/image.jpg"
-                      value={newPostImage}
-                      onChange={(e) => setNewPostImage(e.target.value)}
+                      value={newPostData.images?.[0] || ''}
+                      onChange={(e) => setNewPostData({...newPostData, images: e.target.value ? [e.target.value] : []})}
                     />
                   </div>
                 </div>
@@ -1068,10 +1187,12 @@ const CommunityPage: React.FC = () => {
                     className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:col-start-1 sm:text-sm"
                     onClick={() => {
                       setShowPostModal(false);
-                      setNewPostTitle('');
-                      setNewPostContent('');
-                      setNewPostCommunity('');
-                      setNewPostImage('');
+                      setNewPostData({
+                        title: '',
+                        content: '',
+                        organization: '',
+                        images: []
+                      });
                     }}
                   >
                     Cancel

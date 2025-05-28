@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LeafIcon } from '../components/ui/Icons';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const RegisterPage: React.FC = () => {
   const [name, setName] = useState('');
@@ -13,7 +13,7 @@ const RegisterPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { register } = useContext(AuthContext);
+  const { register } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,6 +25,11 @@ const RegisterPage: React.FC = () => {
       return;
     }
     
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long');
+      return;
+    }
+    
     setIsLoading(true);
     
     try {
@@ -33,15 +38,24 @@ const RegisterPage: React.FC = () => {
         email,
         password,
         role,
-        organization
+        organization: (role === 'school' || role === 'corporate') ? organization : undefined
       });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Failed to register. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const handleGoogleSignup = () => {
+  window.location.href = 'http://localhost:5004/api/auth/google';
+};
+
+const handleFacebookSignup = () => {
+  window.location.href = 'http://localhost:5004/api/auth/facebook';
+};
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md">
@@ -229,6 +243,8 @@ const RegisterPage: React.FC = () => {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div>
                 <button
+                  type="button"
+                  onClick={handleGoogleSignup}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span className="sr-only">Sign up with Google</span>
@@ -240,6 +256,8 @@ const RegisterPage: React.FC = () => {
 
               <div>
                 <button
+                  type="button"
+                  onClick={handleFacebookSignup}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span className="sr-only">Sign up with Facebook</span>
@@ -257,4 +275,3 @@ const RegisterPage: React.FC = () => {
 };
 
 export default RegisterPage;
-
