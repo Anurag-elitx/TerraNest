@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
-// Mock data for actions
 const mockActions = [
   {
     id: 1,
@@ -96,7 +95,6 @@ const mockActions = [
   }
 ];
 
-// Mock data for recently completed actions
 const mockCompletedActions = [
   {
     id: 101,
@@ -113,7 +111,7 @@ const mockCompletedActions = [
 ];
 
 const ActionsPage: React.FC = () => {
-  const { user } = useContext(AuthContext);
+  const { user } = useAuth();
   const [actions, setActions] = useState(mockActions);
   const [completedActions, setCompletedActions] = useState(mockCompletedActions);
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -123,7 +121,6 @@ const ActionsPage: React.FC = () => {
   const [actionNote, setActionNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Filter actions based on category and search query
   const filteredActions = actions.filter(action => {
     const matchesCategory = selectedCategory === 'all' || action.category === selectedCategory;
     const matchesSearch = action.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -194,7 +191,6 @@ const ActionsPage: React.FC = () => {
       setSelectedAction(null);
       setActionNote('');
       
-      // Show success message
       alert(`Action "${selectedAction.title}" logged successfully!`);
     } catch (error) {
       console.error('Error logging action:', error);
@@ -398,9 +394,7 @@ const ActionsPage: React.FC = () => {
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
               <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
             </div>
-
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
             <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div>
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
@@ -425,7 +419,6 @@ const ActionsPage: React.FC = () => {
                   </div>
                 </div>
               </div>
-
               <div className="mt-5 sm:mt-6">
                 <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
                   Add notes (optional)
@@ -442,7 +435,6 @@ const ActionsPage: React.FC = () => {
                   ></textarea>
                 </div>
               </div>
-
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                 <button
                   type="button"

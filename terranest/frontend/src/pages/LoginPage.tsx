@@ -1,7 +1,7 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { LeafIcon } from '../components/ui/Icons';
-import AuthContext from '../context/AuthContext';
+import { useAuth } from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
@@ -9,7 +9,7 @@ const LoginPage: React.FC = () => {
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   
-  const { login } = useContext(AuthContext);
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,6 +26,15 @@ const LoginPage: React.FC = () => {
       setIsLoading(false);
     }
   };
+
+const handleGoogleLogin = () => {
+  window.location.href = 'http://localhost:5004/api/auth/google';
+};
+
+const handleFacebookLogin = () => {
+  window.location.href = 'http://localhost:5004/api/auth/facebook';
+};
+
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -140,6 +149,7 @@ const LoginPage: React.FC = () => {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <div>
                 <button
+                  onClick={handleGoogleLogin}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span className="sr-only">Sign in with Google</span>
@@ -151,6 +161,7 @@ const LoginPage: React.FC = () => {
 
               <div>
                 <button
+                  onClick={handleFacebookLogin}
                   className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
                 >
                   <span className="sr-only">Sign in with Facebook</span>

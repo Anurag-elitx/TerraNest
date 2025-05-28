@@ -2,8 +2,18 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 const helmet = require('helmet');
+const passport = require('./config/passport');
 const mongoose = require('mongoose');
 const { errorHandler } = require('./middleware/errorMiddleware');
+
+// Import routes
+const authRoutes = require('./routes/authRoutes');
+const userRoutes = require('./routes/userRoutes');
+const actionRoutes = require('./routes/actionRoutes');
+const userActionRoutes = require('./routes/userActionRoutes');
+const challengeRoutes = require('./routes/challengeRoutes');
+const postRoutes = require('./routes/postRoutes');
+const organizationRoutes = require('./routes/organizationRoutes');
 
 const app = express();
 
@@ -12,22 +22,21 @@ app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+app.use(passport.initialize());
 
 app.get('/', (req, res) => {
   res.json({ message: 'Welcome to TerraNest API' });
 });
 
-app.use('/api/users', require('./routes/userRoutes'));
-app.use('/api/organizations', require('./routes/organizationRoutes'));
-app.use('/api/actions', require('./routes/actionRoutes'));
-app.use('/api/user-actions', require('./routes/userActionRoutes'));
-app.use('/api/challenges', require('./routes/challengeRoutes'));
-app.use('/api/posts', require('./routes/postRoutes'));
-app.use('/api/auth', require('./routes/authRoutes'));
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/actions', actionRoutes);
+app.use('/api/user-actions', userActionRoutes);
+app.use('/api/challenges', challengeRoutes);
+app.use('/api/posts', postRoutes);
+app.use('/api/organizations', organizationRoutes);
 
-app.get('/api/test', (req, res) => {
-  res.json({ message: 'API is working!' });
-})
 
 app.use(errorHandler);
 

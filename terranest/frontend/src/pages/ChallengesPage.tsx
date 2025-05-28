@@ -1,9 +1,26 @@
-import React, { useState, useEffect, useContext } from 'react';
-import { Link } from 'react-router-dom';
-import AuthContext from '../context/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '../context/AuthContext';
 
-// Mock data for challenges
-const mockChallenges = [
+interface Challenge {
+  id: number;
+  title: string;
+  description: string;
+  category: string;
+  image: string;
+  startDate: string;
+  endDate: string;
+  points: number;
+  level: string;
+  scope: string;
+  participants: Array<{ id: string; name: string }>;
+  completedBy: number;
+  actions: Array<{ id: number; title: string; count: number }>;
+  isJoined: boolean;
+  progress: number;
+  location?: string;
+}
+
+const mockChallenges: Challenge[] = [
   {
     id: 1,
     title: 'Zero Waste Week',
@@ -15,7 +32,7 @@ const mockChallenges = [
     points: 100,
     level: 'beginner',
     scope: 'global',
-    participants: 245,
+    participants: [],
     completedBy: 78,
     actions: [
       { id: 4, title: 'Use reusable bags', count: 5 },
@@ -24,117 +41,62 @@ const mockChallenges = [
     isJoined: true,
     progress: 60
   },
-  {
-    id: 2,
-    title: 'Bike to Work',
-    description: 'Replace your car commute with biking for two weeks to reduce emissions and improve your health.',
-    category: 'transport',
-    image: 'https://images.unsplash.com/photo-1519583272095-6433daf26b6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    startDate: '2023-06-15',
-    endDate: '2023-07-15',
-    points: 150,
-    level: 'intermediate',
-    scope: 'global',
-    participants: 189,
-    completedBy: 42,
-    actions: [
-      { id: 8, title: 'Bike to work', count: 10 }
-    ],
-    isJoined: true,
-    progress: 40
-  },
-  {
-    id: 3,
-    title: 'Plant-Based Month',
-    description: 'Adopt a plant-based diet for a month to reduce your carbon footprint from food consumption.',
-    category: 'food',
-    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    startDate: '2023-07-01',
-    endDate: '2023-07-31',
-    points: 200,
-    level: 'advanced',
-    scope: 'global',
-    participants: 132,
-    completedBy: 0,
-    actions: [
-      { id: 2, title: 'Eat a vegetarian meal', count: 30 }
-    ],
-    isJoined: false,
-    progress: 0
-  },
-  {
-    id: 4,
-    title: 'Energy Saver',
-    description: 'Reduce your home energy consumption through simple daily actions for three weeks.',
-    category: 'energy',
-    image: 'https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    startDate: '2023-06-10',
-    endDate: '2023-07-01',
-    points: 120,
-    level: 'beginner',
-    scope: 'global',
-    participants: 315,
-    completedBy: 103,
-    actions: [
-      { id: 5, title: 'Turn off lights when not in use', count: 21 },
-      { id: 9, title: 'Install energy-efficient light bulbs', count: 1 }
-    ],
-    isJoined: false,
-    progress: 0
-  },
-  {
-    id: 5,
-    title: 'Water Conservation Challenge',
-    description: 'Save water through mindful usage habits for two weeks.',
-    category: 'water',
-    image: 'https://images.unsplash.com/photo-1527100673774-cce25eafaf7f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    startDate: '2023-07-05',
-    endDate: '2023-07-19',
-    points: 80,
-    level: 'beginner',
-    scope: 'global',
-    participants: 98,
-    completedBy: 0,
-    actions: [
-      { id: 3, title: 'Reduce water usage', count: 14 }
-    ],
-    isJoined: false,
-    progress: 0
-  },
-  {
-    id: 6,
-    title: 'Tree Planting Initiative',
-    description: 'Join a community effort to plant trees in your local area.',
-    category: 'other',
-    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-    startDate: '2023-08-01',
-    endDate: '2023-08-31',
-    points: 250,
-    level: 'intermediate',
-    scope: 'local',
-    location: 'San Francisco, CA',
-    participants: 45,
-    completedBy: 0,
-    actions: [
-      { id: 6, title: 'Plant a tree', count: 3 }
-    ],
-    isJoined: false,
-    progress: 0
-  }
+{
+    id: 2,
+    title: 'Bike to Work',
+    description: 'Replace your car commute with biking for two weeks to reduce emissions and improve your health.',
+    category: 'transport',
+    image: 'https://images.unsplash.com/photo-1519583272095-6433daf26b6e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    startDate: '2023-06-15',
+    endDate: '2023-07-15',
+    points: 150,
+    level: 'intermediate',
+    scope: 'global',
+    participants: [{ id: '1', name: 'John Doe' }],
+    completedBy: 82,
+    actions: [
+      { id: 8, title: 'Bike to work', count: 10 }
+    ],
+    isJoined: true,
+    progress: 40
+  },
+  {
+    id: 3,
+    title: 'Plant-Based Month',
+    description: 'Adopt a plant-based diet for a month to reduce your carbon footprint from food consumption.',
+    category: 'food',
+    image: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
+    startDate: '2023-07-01',
+    endDate: '2023-07-31',
+    points: 200,
+    level: 'advanced',
+    scope: 'global',
+    participants: [],
+    completedBy: 93,
+    actions: [
+      { id: 2, title: 'Eat a vegetarian meal', count: 30 }
+    ],
+    isJoined: false,
+    progress: 0
+  }
 ];
 
 export const ChallengesPage: React.FC = () => {
-  const { user } = useContext(AuthContext);
-  const [challenges, setChallenges] = useState(mockChallenges);
+  const { user } = useAuth();
+  const [challenges, setChallenges] = useState<Challenge[]>(mockChallenges);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedLevel, setSelectedLevel] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showJoinModal, setShowJoinModal] = useState(false);
-  const [selectedChallenge, setSelectedChallenge] = useState(null);
+  const [selectedChallenge, setSelectedChallenge] = useState<Challenge | null>(null);
   const [isJoining, setIsJoining] = useState(false);
 
-    const filteredChallenges = challenges.filter((challenge) => {
+  const isUserJoined = (challenge: Challenge) => {
+    return user && challenge.participants.some(p => p.id === user.id);
+  };
+
+  const filteredChallenges = challenges.filter((challenge) => {
     const matchesCategory = selectedCategory === 'all' || challenge.category === selectedCategory;
     const matchesLevel = selectedLevel === 'all' || challenge.level === selectedLevel;
     const matchesStatus = selectedStatus === 'all' || 
@@ -145,38 +107,25 @@ export const ChallengesPage: React.FC = () => {
     return matchesCategory && matchesLevel && matchesStatus && matchesSearch;
   });
 
-  useEffect(() => {
-    // Example:
-    // const fetchChallenges = async () => {
-    //   try {
-    //     const response = await api.get('/challenges');
-    //     setChallenges(response.data);
-    //   } catch (error) {
-    //     console.error('Error fetching challenges:', error);
-    //   }
-    // };
-    // 
-    // fetchChallenges();
-  }, []);
-
   const handleJoinChallenge = (challenge: Challenge) => {
     setSelectedChallenge(challenge);
     setShowJoinModal(true);
   };
 
   const confirmJoinChallenge = async () => {
-    if (!selectedChallenge) return;
+    if (!selectedChallenge || !user) return;
     
     setIsJoining(true);
     
     try {
-      // Example:
-      // const response = await api.post(`/challenges/${selectedChallenge.id}/join`);
-      
       setTimeout(() => {
         setChallenges(challenges.map(challenge => 
           challenge.id === selectedChallenge.id 
-            ? { ...challenge, isJoined: true, participants: challenge.participants + 1 } 
+            ? { 
+                ...challenge, 
+                isJoined: true, 
+                participants: [...challenge.participants, { id: user.id, name: user.name }]
+              } 
             : challenge
         ));
         
@@ -209,6 +158,7 @@ export const ChallengesPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
   const getLevelBadge = (level: string) => {
     switch (level) {
       case 'beginner':
@@ -221,6 +171,7 @@ export const ChallengesPage: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
   return (
     <div className="bg-gray-50 min-h-screen">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
@@ -349,7 +300,7 @@ export const ChallengesPage: React.FC = () => {
                   <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                     <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                   </svg>
-                  <span>{challenge.participants} participants</span>
+                  <span>{challenge.participants.length} participants</span>
                 </div>
                 
                 <div className="mt-2 flex items-center text-sm text-gray-500">
@@ -414,8 +365,58 @@ export const ChallengesPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Join Challenge Modal */}
+      {showJoinModal && selectedChallenge && (
+        <div className="fixed z-10 inset-0 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+          <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <div className="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true"></div>
+            <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+              <div>
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                  <svg className="h-6 w-6 text-green-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                </div>
+                <div className="mt-3 text-center sm:mt-5">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                    Join {selectedChallenge.title}
+                  </h3>
+                  <div className="mt-2">
+                    <p className="text-sm text-gray-500">
+                      Are you sure you want to join this challenge? You'll be able to track your progress and compete with others.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
+                <button
+                  type="button"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm"
+                  onClick={confirmJoinChallenge}
+                  disabled={isJoining}
+                >
+                  {isJoining ? 'Joining...' : 'Join Challenge'}
+                </button>
+                <button
+                  type="button"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:col-start-1 sm:text-sm"
+                  onClick={() => {
+                    setShowJoinModal(false);
+                    setSelectedChallenge(null);
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 export default ChallengesPage;
+
