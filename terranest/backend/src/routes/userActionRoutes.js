@@ -324,7 +324,9 @@ router.route('/:id')
   .get(protect, getUserAction)
   .put(protect, updateUserAction)
   .delete(protect, deleteUserAction);
-
+router.get('/', (req, res) => {
+  res.json({ message: 'User actions route' });
+});
 router.put('/:id/verify', protect, verifyUserAction);
 router.get('/stats', protect, getUserActionStats);
 

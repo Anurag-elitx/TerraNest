@@ -385,6 +385,9 @@ router.route('/:id')
   .put(protect, updateChallenge)
   .delete(protect, deleteChallenge);
 
+router.get('/', (req, res) => {
+  res.json({ message: 'Challenges route' });
+});
 router.post('/:id/join', protect, joinChallenge);
 router.post('/:id/leave', protect, leaveChallenge);
 router.post('/:id/complete', protect, completeChallenge);

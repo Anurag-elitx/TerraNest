@@ -318,6 +318,9 @@ router.route('/:id')
   .put(protect, updateOrganization)
   .delete(protect, authorize('admin'), deleteOrganization);
 
+router.get('/', (req, res) => {
+  res.json({ message: 'Organizations route' });
+});
 router.post('/:id/join', protect, joinOrganization);
 router.post('/:id/leave', protect, leaveOrganization);
 router.put('/:id/transfer-admin', protect, transferAdmin);

@@ -17,8 +17,19 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Please add a password'],
+    required: function() {
+      return !this.googleId && !this.facebookId;
+    },
     minlength: [6, 'Password must be at least 6 characters']
+  },
+  // OAuth fields
+  googleId: {
+    type: String,
+    sparse: true
+  },
+  facebookId: {
+    type: String,
+    sparse: true
   },
   role: {
     type: String,
@@ -63,13 +74,23 @@ const userSchema = new mongoose.Schema({
   isActive: {
     type: Boolean,
     default: true
+  },
+  // OAuth specific fields
+  isOAuthUser: {
+    type: Boolean,
+    default: false
+  },
+  lastLogin: {
+    type: Date,
+    default: Date.now
   }
 }, {
   timestamps: true
 });
 
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) {
+  // Skip password hashing for OAuth users or if password is not modified
+  if (!this.isModified('password') || this.isOAuthUser) {
     next();
   }
   
@@ -78,8 +99,19 @@ userSchema.pre('save', async function(next) {
 });
 
 userSchema.methods.matchPassword = async function(enteredPassword) {
+  if (this.isOAuthUser) {
+    return false; // OAuth users can't login with password
+  }
   return await bcrypt.compare(enteredPassword, this.password);
 };
+
+// Set isOAuthUser flag when OAuth IDs are present
+userSchema.pre('save', function(next) {
+  if (this.googleId || this.facebookId) {
+    this.isOAuthUser = true;
+  }
+  next();
+});
 
 const User = mongoose.model('User', userSchema);
 

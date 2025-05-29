@@ -211,7 +211,9 @@ router.route('/:id')
   .get(getAction)
   .put(protect, updateAction)
   .delete(protect, deleteAction);
-
+router.get('/', (req, res) => {
+  res.json({ message: 'Actions route' });
+});
 router.post('/:id/log', protect, logUserAction);
 router.get('/user/history', protect, getUserActionHistory);
 

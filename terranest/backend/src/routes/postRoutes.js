@@ -293,6 +293,9 @@ router.route('/:id')
   .put(protect, updatePost)
   .delete(protect, deletePost);
 
+router.get('/', (req, res) => {
+  res.json({ message: 'Posts route' });
+});
 router.put('/:id/like', protect, toggleLike);
 router.post('/:id/comments', protect, addComment);
 router.delete('/:id/comments/:commentId', protect, deleteComment);
