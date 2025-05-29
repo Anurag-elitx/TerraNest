@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: terranest-backend
+    runtime: node
+    buildCommand: npm install
+    startCommand: npm start
+    rootDir: backend
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: MONGO_URI
+        fromDatabase:
+          name: terranest-mongodb
+          property: connectionString
+      - key: JWT_SECRET
+        generateValue: true
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: FRONTEND_URL
+        value: https://terranest-frontend.onrender.com
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FACEBOOK_APP_ID
+        sync: false
+      - key: FACEBOOK_APP_SECRET
+        sync: false
+
+  - type: web
+    name: terranest-frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: build
+    rootDir: frontend
+    envVars:
+      - key: REACT_APP_API_URL
+        value: https://terranest-backend.onrender.com
+      - key: REACT_APP_API_BASE_URL
+        value: https://terranest-backend.onrender.com/api
+databases:
+  - name: terranest-mongodb
+    databaseName: terranest
+    user: terranest

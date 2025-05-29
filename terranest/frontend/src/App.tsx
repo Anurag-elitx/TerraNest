@@ -22,6 +22,8 @@ import ContactPage from './pages/ContactPage';
 import BlogPage from './pages/BlogPage';
 import PrivacyPage from './pages/PrivacyPage';
 import TermsPage from './pages/TermsPage';
+import AuthCallbackPage from './pages/AuthCallbackPage';
+import AuthErrorPage from './pages/AuthErrorPage';
 import { handleOAuthCallback } from './utils/handleOAuthCallback';
 
 function App() {
@@ -119,6 +121,13 @@ function App() {
                 </ProtectedRoute>
               } 
             />
+            <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route 
+          path="/auth/error" 
+          element={<AuthErrorPage 
+          />
+          } 
+        />
           </Routes>
         </Layout>
         <ToastContainer position="top-right" autoClose={5000} />

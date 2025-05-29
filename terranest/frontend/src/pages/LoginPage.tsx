@@ -1,16 +1,25 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState, useContext } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { LeafIcon } from '../components/ui/Icons';
-import { useAuth } from '../context/AuthContext';
+import AuthContext from '../context/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [searchParams] = useSearchParams();
   
-  const { login } = useAuth();
+  const auth = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // Check for error from OAuth
+  React.useEffect(() => {
+    const oauthError = searchParams.get('error');
+    if (oauthError) {
+      setError(decodeURIComponent(oauthError));
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,7 +27,8 @@ const LoginPage: React.FC = () => {
     setIsLoading(true);
     
     try {
-      await login(email, password);
+      if (!auth) throw new Error('Authentication context is not available');
+      await auth.login(email, password);
       navigate('/dashboard');
     } catch (err: any) {
       setError(err.message || 'Failed to login. Please check your credentials.');
@@ -27,14 +37,15 @@ const LoginPage: React.FC = () => {
     }
   };
 
-const handleGoogleLogin = () => {
-  window.location.href = 'http://localhost:5004/api/auth/google';
-};
+  const handleGoogleLogin = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5004';
+    window.location.href = `${apiUrl}/auth/google`;
+  };
 
-const handleFacebookLogin = () => {
-  window.location.href = 'http://localhost:5004/api/auth/facebook';
-};
-
+  const handleFacebookLogin = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5004';
+    window.location.href = `${apiUrl}/auth/facebook`;
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
@@ -177,5 +188,4 @@ const handleFacebookLogin = () => {
     </div>
   );
 };
-
 export default LoginPage;

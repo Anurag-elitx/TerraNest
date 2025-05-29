@@ -20,6 +20,7 @@ export interface AuthContextType {
   register: (userData: any) => Promise<void>;
   logout: () => void;
   loading: boolean;
+  setUser: (user: User | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -54,7 +55,7 @@ const loadUser = async () => {
     const userData = await authAPI.getProfile();
     setUser({
       ...userData,
-      id: userData._id || userData.id, // Handle both cases
+      id: userData._id || userData.id,
     });
   } catch (error) {
     localStorage.removeItem('token');
@@ -104,6 +105,7 @@ const register = async (userData: any) => {
     register,
     logout,
     loading,
+    setUser,
   };
 
   return (

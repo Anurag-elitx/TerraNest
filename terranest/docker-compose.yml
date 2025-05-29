@@ -6,7 +6,7 @@ services:
     container_name: terranest-mongodb
     restart: unless-stopped
     ports:
-      - "27017:27017"
+      - "27018:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
@@ -25,10 +25,12 @@ services:
     ports:
       - "5004:5004"
     environment:
-      - NODE_ENV=production
+      - NODE_ENV=development
       - MONGO_URI=mongodb://admin:password@mongodb:27017/terranest?authSource=admin
-      - JWT_SECRET=your_production_jwt_secret_here
+      - JWT_SECRET=your_jwt_secret_here_12345
+      - SESSION_SECRET=your_session_secret_here_12345
       - PORT=5004
+      - FRONTEND_URL=http://localhost:3000
     depends_on:
       - mongodb
     networks:
@@ -36,7 +38,7 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./backend
       dockerfile: Dockerfile
     container_name: terranest-frontend
     restart: unless-stopped
@@ -45,6 +47,7 @@ services:
     environment:
       - REACT_APP_API_URL=http://localhost:5004
       - REACT_APP_API_BASE_URL=http://localhost:5004/api
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - backend
     networks:

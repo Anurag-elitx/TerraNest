@@ -1,7 +1,7 @@
 FROM node:18
 
-# Set working directory
-WORKDIR /app
+# Create app directory
+WORKDIR /usr/src/app
 
 # Copy package files
 COPY package*.json ./
@@ -13,7 +13,7 @@ RUN npm install
 COPY . .
 
 # Expose port
-EXPOSE 3000
+EXPOSE 5004
 
-# Start the development server
+# Start the application
 CMD ["npm", "start"]
