@@ -48,7 +48,10 @@ app.get('/health', (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.json({ message: 'Welcome to TerraNest API' });
+  res.json({ message: 'Welcome to TerraNest API',
+    status: 'healthy',
+    timestamp: new Date().toISOString() 
+  });
 });
 
 // Routes
