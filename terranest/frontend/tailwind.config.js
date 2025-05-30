@@ -3,6 +3,7 @@ module.exports = {
   content: [
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
+  darkMode: 'class',
   theme: {
     extend: {
       colors: {
@@ -16,8 +17,18 @@ module.exports = {
           DEFAULT: '#3b82f6',
           dark: '#2563eb',
         },
-        background: '#f9fafb',
-        surface: '#ffffff',
+        background: {
+          light: '#f9fafb',
+          dark: '#111827',
+        },
+        surface: {
+          light: '#ffffff',
+          dark: '#1f2937',
+        },
+        text: {
+          light: '#111827',
+          dark: '#f9fafb',
+        },
       },
       fontFamily: {
         sans: ['Inter', 'sans-serif'],

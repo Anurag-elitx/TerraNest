@@ -8,9 +8,9 @@ const ProfilePage: React.FC = () => {
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
-    location: (user as any).location || '',
-    bio: (user as any).bio || '',
-    profilePicture: user?.profilePicture || ''
+    location: (user as any).location || 'San Francisco, CA',
+    bio: (user as any).bio || 'Passionate about sustainability and environmental conservation. Working towards a greener future!',
+    profilePicture: user?.profilePicture || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80'
   });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -48,17 +48,25 @@ const ProfilePage: React.FC = () => {
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <img
-                  className="h-20 w-20 rounded-full"
-                  src={(user as any).profilePicture || 'https://via.placeholder.com/80'}
+                  className="h-24 w-24 rounded-full object-cover border-4 border-primary"
+                  src={formData.profilePicture}
                   alt={user.name}
                 />
                 <div className="ml-6">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  <h3 className="text-2xl font-bold text-gray-900">
                     {user.name}
                   </h3>
-                  <p className="mt-1 max-w-2xl text-sm text-gray-500">
-                    {(user as any).role} • {user.email}
+                  <p className="mt-1 text-sm text-gray-500">
+                    Environmental Activist • {user.email}
                   </p>
+                  <div className="mt-2 flex space-x-4">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                      Level 5 Eco Warrior
+                    </span>
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                      Community Leader
+                    </span>
+                  </div>
                 </div>
               </div>
               <button
@@ -154,31 +162,66 @@ const ProfilePage: React.FC = () => {
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Location</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {(user as any).location || 'Not specified'}
+                    {formData.location}
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Bio</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {(user as any).bio || 'No bio provided'}
+                    {formData.bio}
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Total Emission Saved</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {(user as any).totalEmissionSaved} kg CO₂
+                    150 kg CO₂
                   </dd>
                 </div>
                 <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Actions Completed</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {(user as any).actionsCompleted}
+                    12
                   </dd>
                 </div>
                 <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt className="text-sm font-medium text-gray-500">Challenges Joined</dt>
                   <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-                    {(user as any).challengesJoined}
+                    3
+                  </dd>
+                </div>
+                <div className="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Achievements</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        Early Adopter
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800">
+                        Community Builder
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Eco Champion
+                      </span>
+                    </div>
+                  </dd>
+                </div>
+                <div className="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                  <dt className="text-sm font-medium text-gray-500">Interests</dt>
+                  <dd className="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                    <div className="flex flex-wrap gap-2">
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        Renewable Energy
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                        Sustainable Living
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
+                        Urban Gardening
+                      </span>
+                      <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        Climate Action
+                      </span>
+                    </div>
                   </dd>
                 </div>
               </dl>
@@ -188,4 +231,6 @@ const ProfilePage: React.FC = () => {
       </div>
     </div>
   );
-};export default ProfilePage;
+};
+
+export default ProfilePage;

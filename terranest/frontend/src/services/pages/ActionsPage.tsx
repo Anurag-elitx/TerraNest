@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useUserActivity } from '../../context/UserActivityContext';
 const mockActions = [
   {
     id: 1,
@@ -119,6 +120,10 @@ const ActionsPage: React.FC = () => {
   const [selectedAction, setSelectedAction] = useState<any>(null);
   const [actionNote, setActionNote] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addAction, addCommunityUpdate } = useUserActivity();
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   const filteredActions = actions.filter(action => {
     const matchesCategory = selectedCategory === 'all' || action.category === selectedCategory;
@@ -126,6 +131,40 @@ const ActionsPage: React.FC = () => {
                           action.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  // Update suggestions when search query changes
+  useEffect(() => {
+    if (searchQuery.length > 0) {
+      const filteredSuggestions = actions.filter(action => 
+        action.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        action.description.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 5); // Limit to 5 suggestions
+      setSuggestions(filteredSuggestions);
+      setShowSuggestions(true);
+    } else {
+      setSuggestions([]);
+      setShowSuggestions(false);
+    }
+  }, [searchQuery]);
+
+  // Close suggestions when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
+  const handleSuggestionClick = (suggestion: any) => {
+    setSearchQuery(suggestion.title);
+    setShowSuggestions(false);
+  };
 
   // In a real app, you would fetch actions from your API
   useEffect(() => {
@@ -158,9 +197,24 @@ const ActionsPage: React.FC = () => {
   }, []);
 
   const handleLogAction = (action: any) => {
-    setSelectedAction(action);
-    setActionNote('');
-    setIsLoggingAction(true);
+    // Add the action to the user's activity
+    addAction({
+      title: action.title,
+      date: new Date().toISOString().split('T')[0],
+      points: action.points,
+      emissionSaved: action.emissionSaved
+    });
+
+    // Add a community update
+    addCommunityUpdate({
+      user: 'You',
+      action: `completed the "${action.title}" action`,
+      time: 'Just now'
+    });
+
+    // Close the modal
+    setIsLoggingAction(false);
+    setSelectedAction(null);
   };
 
   const handleSubmitAction = async () => {
@@ -202,29 +256,29 @@ const ActionsPage: React.FC = () => {
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'transport':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
       case 'energy':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
       case 'food':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
       case 'waste':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
       case 'water':
-        return 'bg-indigo-100 text-indigo-800';
+        return 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200';
     }
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
               Actions
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Complete actions to reduce your carbon footprint and earn points.
             </p>
           </div>
@@ -233,13 +287,13 @@ const ActionsPage: React.FC = () => {
         {/* Filters and Search */}
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
-            <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Filter by Category
             </label>
             <select
               id="category"
               name="category"
-              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+              className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-800 dark:text-white"
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -252,8 +306,9 @@ const ActionsPage: React.FC = () => {
               <option value="other">Other</option>
             </select>
           </div>
-          <div>
-            <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+          
+          <div ref={searchRef} className="relative">
+            <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
               Search Actions
             </label>
             <div className="mt-1 relative rounded-md shadow-sm">
@@ -261,24 +316,55 @@ const ActionsPage: React.FC = () => {
                 type="text"
                 name="search"
                 id="search"
-                className="focus:ring-primary focus:border-primary block w-full pl-3 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
+                className="focus:ring-primary focus:border-primary block w-full pl-3 pr-10 py-2 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                 placeholder="Search by title or description"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
+                onFocus={() => searchQuery.length > 0 && setShowSuggestions(true)}
               />
               <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                   <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                 </svg>
               </div>
             </div>
+
+            {/* Suggestions Dropdown */}
+            {showSuggestions && suggestions.length > 0 && (
+              <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-lg max-h-60 rounded-md py-1 text-base overflow-auto focus:outline-none sm:text-sm">
+                {suggestions.map((suggestion) => (
+                  <div
+                    key={suggestion.id}
+                    className="cursor-pointer select-none relative py-2 pl-3 pr-9 hover:bg-gray-100 dark:hover:bg-gray-700"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-2xl mr-2">{suggestion.icon}</span>
+                      <div>
+                        <span className="font-medium text-gray-900 dark:text-white block truncate">
+                          {suggestion.title}
+                        </span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 block truncate">
+                          {suggestion.description.substring(0, 50)}...
+                        </span>
+                      </div>
+                    </div>
+                    <div className="absolute inset-y-0 right-0 flex items-center pr-4">
+                      <span className="text-sm text-primary dark:text-primary-light">
+                        +{suggestion.points} pts
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
 
         {/* Actions Grid */}
         <div className="mt-8 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {filteredActions.map((action) => (
-            <div key={action.id} className="bg-white overflow-hidden shadow rounded-lg">
+            <div key={action.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors duration-200">
               <div className="p-5">
                 <div className="flex items-center">
                   <div className="flex-shrink-0 text-3xl">
@@ -286,28 +372,28 @@ const ActionsPage: React.FC = () => {
                   </div>
                   <div className="ml-5 w-0 flex-1">
                     <dl>
-                      <dt className="text-lg font-medium text-gray-900 truncate">{action.title}</dt>
+                      <dt className="text-lg font-medium text-gray-900 dark:text-white truncate">{action.title}</dt>
                       <dd className="mt-1">
                         <span className={`px-2 py-1 text-xs font-medium rounded-full ${getCategoryColor(action.category)}`}>
                           {action.category}
                         </span>
-                        <span className="ml-2 text-xs text-gray-500">{action.frequency}</span>
+                        <span className="ml-2 text-xs text-gray-500 dark:text-gray-400">{action.frequency}</span>
                       </dd>
                     </dl>
                   </div>
                 </div>
                 <div className="mt-4">
-                  <p className="text-sm text-gray-600">{action.description}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">{action.description}</p>
                 </div>
                 <div className="mt-4 flex justify-between items-center">
                   <div>
-                    <span className="text-sm font-medium text-gray-900">{action.emissionSaved} kg CO2</span>
-                    <span className="mx-2 text-gray-300">|</span>
-                    <span className="text-sm font-medium text-primary">+{action.points} points</span>
+                    <span className="text-sm font-medium text-gray-900 dark:text-white">{action.emissionSaved} kg CO2</span>
+                    <span className="mx-2 text-gray-300 dark:text-gray-600">|</span>
+                    <span className="text-sm font-medium text-primary dark:text-primary-light">+{action.points} points</span>
                   </div>
                   <button
                     onClick={() => handleLogAction(action)}
-                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                   >
                     Log Action
                   </button>
@@ -319,12 +405,12 @@ const ActionsPage: React.FC = () => {
 
         {/* No results message */}
         {filteredActions.length === 0 && (
-          <div className="mt-6 text-center py-12 bg-white shadow rounded-lg">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-6 text-center py-12 bg-white dark:bg-gray-800 shadow rounded-lg transition-colors duration-200">
+            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No actions found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No actions found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Try adjusting your search or filter to find what you're looking for.
             </p>
             <div className="mt-6">
@@ -333,7 +419,7 @@ const ActionsPage: React.FC = () => {
                   setSelectedCategory('all');
                   setSearchQuery('');
                 }}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
               >
                 Clear filters
               </button>
@@ -343,10 +429,10 @@ const ActionsPage: React.FC = () => {
 
         {/* Recent Activity */}
         <div className="mt-12">
-          <h3 className="text-lg font-medium text-gray-900">Your Recent Activity</h3>
+          <h3 className="text-lg font-medium text-gray-900 dark:text-white">Your Recent Activity</h3>
           {completedActions.length > 0 ? (
-            <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md">
-              <ul className="divide-y divide-gray-200">
+            <div className="mt-4 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md transition-colors duration-200">
+              <ul className="divide-y divide-gray-200 dark:divide-gray-700">
                 {completedActions.map((completedAction) => {
                   const actionDetails = actions.find(a => a.id === completedAction.actionId);
                   return (
@@ -357,20 +443,20 @@ const ActionsPage: React.FC = () => {
                             {actionDetails?.icon}
                           </div>
                           <div>
-                            <p className="text-sm font-medium text-primary">{actionDetails?.title}</p>
-                            <p className="text-sm text-gray-500">{completedAction.date}</p>
+                            <p className="text-sm font-medium text-primary dark:text-primary-light">{actionDetails?.title}</p>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{completedAction.date}</p>
                           </div>
                         </div>
                         <div className="flex items-center">
-                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
+                          <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200">
                             +{actionDetails?.points} pts
                           </span>
-                          <span className="ml-2 text-sm text-gray-500">{actionDetails?.emissionSaved} kg CO2</span>
+                          <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">{actionDetails?.emissionSaved} kg CO2</span>
                         </div>
                       </div>
                       {completedAction.notes && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-600 italic">"{completedAction.notes}"</p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300 italic">"{completedAction.notes}"</p>
                         </div>
                       )}
                     </li>
@@ -379,8 +465,8 @@ const ActionsPage: React.FC = () => {
               </ul>
             </div>
           ) : (
-            <div className="mt-4 bg-white shadow overflow-hidden sm:rounded-md p-6 text-center">
-              <p className="text-sm text-gray-500">You haven't logged any actions yet. Start by logging an action above!</p>
+            <div className="mt-4 bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-md p-6 text-center transition-colors duration-200">
+              <p className="text-sm text-gray-500 dark:text-gray-400">You haven't logged any actions yet. Start by logging an action above!</p>
             </div>
           )}
         </div>
@@ -391,35 +477,35 @@ const ActionsPage: React.FC = () => {
         <div className="fixed z-10 inset-0 overflow-y-auto">
           <div className="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
             <div className="fixed inset-0 transition-opacity" aria-hidden="true">
-              <div className="absolute inset-0 bg-gray-500 opacity-75"></div>
+              <div className="absolute inset-0 bg-gray-500 dark:bg-gray-900 opacity-75"></div>
             </div>
             <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div className="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+            <div className="inline-block align-bottom bg-white dark:bg-gray-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
               <div>
-                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100">
+                <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900">
                   <div className="text-2xl">{selectedAction.icon}</div>
                 </div>
                 <div className="mt-3 text-center sm:mt-5">
-                  <h3 className="text-lg leading-6 font-medium text-gray-900">
+                  <h3 className="text-lg leading-6 font-medium text-gray-900 dark:text-white">
                     Log Action: {selectedAction.title}
                   </h3>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
                       {selectedAction.description}
                     </p>
                   </div>
                   <div className="mt-4 flex justify-center space-x-4">
                     <div>
-                      <span className="text-sm font-medium text-gray-900">{selectedAction.emissionSaved} kg CO2</span>
+                      <span className="text-sm font-medium text-gray-900 dark:text-white">{selectedAction.emissionSaved} kg CO2</span>
                     </div>
                     <div>
-                      <span className="text-sm font-medium text-primary">+{selectedAction.points} points</span>
+                      <span className="text-sm font-medium text-primary dark:text-primary-light">+{selectedAction.points} points</span>
                     </div>
                   </div>
                 </div>
               </div>
               <div className="mt-5 sm:mt-6">
-                <label htmlFor="notes" className="block text-sm font-medium text-gray-700">
+                <label htmlFor="notes" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                   Add notes (optional)
                 </label>
                 <div className="mt-1">
@@ -427,7 +513,7 @@ const ActionsPage: React.FC = () => {
                     id="notes"
                     name="notes"
                     rows={3}
-                    className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border border-gray-300 rounded-md"
+                    className="shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="e.g., Took the bus to work today"
                     value={actionNote}
                     onChange={(e) => setActionNote(e.target.value)}
@@ -437,7 +523,7 @@ const ActionsPage: React.FC = () => {
               <div className="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
                 <button
                   type="button"
-                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:col-start-2 sm:text-sm"
+                  className="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-primary text-base font-medium text-white hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800 sm:col-start-2 sm:text-sm"
                   onClick={handleSubmitAction}
                   disabled={isSubmitting}
                 >
@@ -445,7 +531,7 @@ const ActionsPage: React.FC = () => {
                 </button>
                 <button
                   type="button"
-                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary sm:mt-0 sm:col-start-1 sm:text-sm"
+                  className="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-gray-600 shadow-sm px-4 py-2 bg-white dark:bg-gray-700 text-base font-medium text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800 sm:mt-0 sm:col-start-1 sm:text-sm"
                   onClick={() => {
                     setIsLoggingAction(false);
                     setSelectedAction(null);
