@@ -6,37 +6,28 @@ const LandingPage: React.FC = () => {
   return (
     <div className="bg-white">
       {/* Hero section */}
-      <div className="relative bg-gradient-to-r from-green-500 to-blue-500">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32">
-          <div className="md:flex md:items-center md:justify-between">
-            <div className="md:w-1/2">
-              <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                Take Climate Action with TerraNest
-              </h1>
-              <p className="mt-6 text-xl text-white">
-                Join our community and make a difference through simple daily actions, challenges, and community initiatives.
-              </p>
-              <div className="mt-8 flex space-x-4">
-                <Link
-                  to="/register"
-                  className="inline-block bg-white text-primary font-medium rounded-md px-6 py-3 hover:bg-gray-100 transition duration-150"
-                >
-                  Get Started
-                </Link>
-                <Link
-                  to="/about"
-                  className="inline-block bg-transparent border-2 border-white text-white font-medium rounded-md px-6 py-3 hover:bg-white hover:bg-opacity-10 transition duration-150"
-                >
-                  Learn More
-                </Link>
-              </div>
-            </div>
-            <div className="mt-12 md:mt-0 md:w-1/2">
-              <img
-                src="/hero-image.png"
-                alt="Climate action illustration"
-                className="w-full h-auto rounded-lg shadow-xl"
-              />
+      <div className="relative bg-gradient-to-r from-green-500 to-blue-500 h-screen flex items-center justify-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 flex items-center justify-center">
+          <div className="text-center max-w-2xl">
+            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
+              Take Climate Action with TerraNest
+            </h1>
+            <p className="mt-6 text-xl text-white">
+              Join our community and make a difference through simple daily actions, challenges, and community initiatives.
+            </p>
+            <div className="mt-8 flex justify-center space-x-4">
+              <Link
+                to="/register"
+                className="inline-block bg-white text-primary font-medium rounded-md px-6 py-3 hover:bg-gray-100 transition duration-150"
+              >
+                Get Started
+              </Link>
+              <Link
+                to="/about"
+                className="inline-block bg-transparent border-2 border-white text-white font-medium rounded-md px-6 py-3 hover:bg-white hover:bg-opacity-10 transition duration-150"
+              >
+                Learn More
+              </Link>
             </div>
           </div>
         </div>
@@ -55,7 +46,7 @@ const LandingPage: React.FC = () => {
           </div>
 
           <div className="mt-16 grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-300 flex flex-col items-center text-center transition-transform duration-300 transform hover:scale-105 hover:shadow-lg">
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary bg-opacity-10 text-primary">
                 <LeafIcon className="h-8 w-8" />
               </div>
@@ -65,20 +56,20 @@ const LandingPage: React.FC = () => {
               </p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-300 flex flex-col items-center text-center transition-transform duration-300 transform hover:scale-105 hover:shadow-lg">              
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary bg-opacity-10 text-primary">
-                <UsersIcon className="h-8 w-8" />
-              </div>
+              <UsersIcon className="h-8 w-8" />
+            </div>
               <h3 className="mt-6 text-xl font-medium text-gray-900">Community Challenges</h3>
               <p className="mt-2 text-gray-600">
                 Join challenges with your community, school, or organization to amplify your impact.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 text-center">
+            <div className="bg-white rounded-lg shadow-md p-6 border border-gray-300 flex flex-col items-center text-center transition-transform duration-300 transform hover:scale-105 hover:shadow-lg">              
               <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-primary bg-opacity-10 text-primary">
-                <ChartLineIcon className="h-8 w-8" />
-              </div>
+              <ChartLineIcon className="h-8 w-8" />
+            </div>
               <h3 className="mt-6 text-xl font-medium text-gray-900">Track Your Impact</h3>
               <p className="mt-2 text-gray-600">
                 See your progress and the collective impact of our community in real-time.
