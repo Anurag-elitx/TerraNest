@@ -1,20 +1,15 @@
-FROM node:18-alpine as frontend-build
-
-WORKDIR /app/frontend
-COPY frontend/package*.json ./
-RUN npm ci --only=production
-COPY frontend/ ./
-RUN npm run build
-
-FROM node:18-alpine as backend
+FROM node:18-alpine
 
 WORKDIR /app
-COPY backend/package*.json ./
-RUN npm ci --only=production
-COPY backend/ ./
 
-COPY --from=frontend-build /app/frontend/build ./public
+COPY terranest/backend/package*.json ./
+RUN npm install
 
-EXPOSE 5004
+COPY terranest/backend/ ./
+
+EXPOSE 10000
+
+ENV NODE_ENV=production
+ENV PORT=10000
 
 CMD ["npm", "start"]
