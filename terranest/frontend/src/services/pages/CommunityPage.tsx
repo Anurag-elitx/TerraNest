@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link } from 'react-router-dom';
-import { toast } from 'react-toastify';
 import { useAuth } from '../../context/AuthContext';
 import communityService, { Community as CommunityType, CreateCommunityData } from '../../services/communityService';
 import postService, { Post as PostType, CreatePostData } from '../../services/postService';
@@ -125,6 +124,90 @@ const mockCommunities = [
     posts: 43,
     events: 4,
     createdAt: "2025-04-01T00:00:00Z"
+  },
+  {
+    id: 7,
+    name: "Climate Action Network",
+    description: "A global community working together to combat climate change through local and international initiatives.",
+    category: "education",
+    members: 1250,
+    postCount: 567,
+    image: "https://images.unsplash.com/photo-1497435334941-8c899ee9e8e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: true,
+    isAdmin: false,
+    posts: 89,
+    events: 15,
+    createdAt: "2023-03-15T00:00:00Z"
+  },
+  {
+    id: 8,
+    name: "Permaculture Pioneers",
+    description: "Learn and share sustainable farming practices that work with nature, not against it.",
+    category: "gardening",
+    members: 678,
+    postCount: 234,
+    image: "https://images.unsplash.com/photo-1500937386664-56d1dfef3854?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: false,
+    isAdmin: false,
+    posts: 56,
+    events: 8,
+    createdAt: "2024-01-20T00:00:00Z"
+  },
+  {
+    id: 9,
+    name: "Green Tech Innovators",
+    description: "Exploring and developing cutting-edge technologies for a sustainable future.",
+    category: "energy",
+    members: 945,
+    postCount: 378,
+    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: true,
+    isAdmin: true,
+    posts: 112,
+    events: 12,
+    createdAt: "2023-09-10T00:00:00Z"
+  },
+  {
+    id: 10,
+    name: "Bike Commuters United",
+    description: "Promoting cycling as a sustainable and healthy mode of transportation in urban areas.",
+    category: "transport",
+    members: 432,
+    postCount: 189,
+    image: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: false,
+    isAdmin: false,
+    posts: 45,
+    events: 6,
+    createdAt: "2024-02-28T00:00:00Z"
+  },
+  {
+    id: 11,
+    name: "Sustainable Fashion Collective",
+    description: "Exploring eco-friendly fashion choices and promoting ethical clothing practices.",
+    category: "lifestyle",
+    members: 789,
+    postCount: 312,
+    image: "https://images.unsplash.com/photo-1445205170230-053b83016050?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: true,
+    isAdmin: false,
+    posts: 78,
+    events: 9,
+    createdAt: "2023-11-15T00:00:00Z"
+  },
+  {
+    id: 12,
+    name: "Environmental Education Hub",
+    description: "Resources and discussions for educators teaching about environmental conservation.",
+    category: "education",
+    members: 567,
+    postCount: 245,
+    image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80",
+    isJoined: false,
+    isAdmin: false,
+    posts: 34,
+    events: 7,
+    createdAt: "2024-03-01T00:00:00Z"
   }
 ];
 
@@ -247,14 +330,11 @@ const CommunityPage: React.FC = () => {
   const fetchCommunities = async () => {
     try {
       setLoading(true);
-      const response = await communityService.getCommunities({
-        category: selectedCategory === 'all' ? undefined : selectedCategory,
-        search: searchQuery || undefined
-      });
-      setCommunities(response.communities);
+      // Use mock data instead of API call
+      setCommunities(mockCommunities);
     } catch (error) {
       console.error('Error fetching communities:', error);
-      toast.error('Failed to load communities');
+      alert('Failed to load communities');
     } finally {
       setLoading(false);
     }
@@ -262,12 +342,11 @@ const CommunityPage: React.FC = () => {
 
   const fetchUserCommunities = async () => {
     try {
-      const [joinedResponse, adminResponse] = await Promise.all([
-        communityService.getUserCommunities('joined'),
-        communityService.getUserCommunities('admin')
-      ]);
-      setJoinedCommunities(joinedResponse.communities);
-      setAdminCommunities(adminResponse.communities);
+      // Use mock data for joined and admin communities
+      const joinedCommunities = mockCommunities.filter(c => c.isJoined);
+      const adminCommunities = mockCommunities.filter(c => c.isAdmin);
+      setJoinedCommunities(joinedCommunities);
+      setAdminCommunities(adminCommunities);
     } catch (error) {
       console.error('Error fetching user communities:', error);
     }
@@ -280,7 +359,7 @@ const CommunityPage: React.FC = () => {
       setPosts(response.posts);
     } catch (error) {
       console.error('Error fetching user feed:', error);
-      toast.error('Failed to load feed');
+      alert('Failed to load feed');
     } finally {
       setLoading(false);
     }
@@ -294,8 +373,22 @@ const CommunityPage: React.FC = () => {
   });
 
   const handleJoinCommunity = (community: Community) => {
-    setSelectedCommunity(community);
-    setShowJoinModal(true);
+    // Update mock data
+    const updatedCommunities = mockCommunities.map(c => {
+      if (c.id === community.id) {
+        return {
+          ...c,
+          isJoined: true,
+          members: c.members + 1
+        };
+      }
+      return c;
+    });
+    
+    setCommunities(updatedCommunities);
+    setJoinedCommunities([...joinedCommunities, community]);
+    
+    alert(`You've successfully joined "${community.name}"!`);
   };
 
   const confirmJoinCommunity = async () => {
@@ -304,22 +397,27 @@ const CommunityPage: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      await communityService.joinCommunity(String(selectedCommunity.id));
+      // Update mock data
+      const updatedCommunities = mockCommunities.map(c => {
+        if (c.id === selectedCommunity.id) {
+          return {
+            ...c,
+            isJoined: true,
+            members: c.members + 1
+          };
+        }
+        return c;
+      });
       
-      setCommunities(communities.map(community => 
-        community.id === selectedCommunity.id 
-          ? { ...community, members: (community.members || 0) + 1 } 
-          : community
-      ));
-      
-      await fetchUserCommunities();
+      setCommunities(updatedCommunities);
+      setJoinedCommunities([...joinedCommunities, selectedCommunity]);
       
       setShowJoinModal(false);
       setSelectedCommunity(null);
-      toast.success(`You've successfully joined "${selectedCommunity.name}"!`);
+      alert(`You've successfully joined "${selectedCommunity.name}"!`);
     } catch (error: any) {
       console.error('Error joining community:', error);
-      toast.error(error.response?.data?.message || 'Failed to join community');
+      alert('Failed to join community');
     } finally {
       setIsSubmitting(false);
     }
@@ -329,37 +427,94 @@ const CommunityPage: React.FC = () => {
     if (!window.confirm('Are you sure you want to leave this community?')) return;
     
     try {
-      await communityService.leaveCommunity(String(communityId));
+      // Update mock data
+      const updatedCommunities = mockCommunities.map(c => {
+        if (c.id === communityId) {
+          return {
+            ...c,
+            isJoined: false,
+            members: c.members - 1
+          };
+        }
+        return c;
+      });
       
-      setCommunities(communities.map(community => 
-        community.id === communityId 
-          ? { ...community, members: (community.members || 0) - 1 } 
-          : community
-      ));
+      setCommunities(updatedCommunities);
+      setJoinedCommunities(joinedCommunities.filter(c => c.id !== communityId));
       
-      await fetchUserCommunities();
-      
-      toast.success('You have left the community.');
+      alert('You have left the community.');
     } catch (error: any) {
       console.error('Error leaving community:', error);
-      toast.error(error.response?.data?.message || 'Failed to leave community');
+      alert('Failed to leave community');
     }
   };
 
-  const handleCreateCommunity = async (e: React.FormEvent) => {    e.preventDefault();
+  const handleCreateCommunity = async (e: React.FormEvent) => {
+    e.preventDefault();
     
     if (!newCommunityData.name || !newCommunityData.description) {
-      toast.error('Please fill in all required fields.');
+      alert('Please fill in all required fields.');
       return;
     }
+     // Find the selected community
+     const selectedCommunity = mockCommunities.find(c => c.id.toString() === newPostData.organization);
+    
+     if (!selectedCommunity) {
+       alert('Selected community not found');
+       return;
+     }
+ 
+     // Create new post
+     const newPost: Post = {
+       id: (posts.length + 1).toString(),
+       communityId: selectedCommunity.id,
+       title: newPostData.title,
+       content: newPostData.content,
+       user: {
+         id: 1,
+         name: "Current User",
+         profilePicture: "https://randomuser.me/api/portraits/men/1.jpg"
+       },
+       createdAt: new Date().toISOString(),
+       date: new Date().toISOString(),
+       likes: [],
+       comments: [],
+       image: newPostData.images?.[0],
+       organization: {
+         id: selectedCommunity.id.toString(),
+         name: selectedCommunity.name
+       }
+     };
+     
+     // Add post to feed
+     setPosts([newPost, ...posts]);
     
     setIsSubmitting(true);
     
     try {
-      const newCommunity = await communityService.createCommunity(newCommunityData);
+      // Create new community with mock data
+      const newCommunity: Community = {
+        id: mockCommunities.length + 1,
+        name: newCommunityData.name,
+        description: newCommunityData.description,
+        category: newCommunityData.category,
+        members: 1,
+        postCount: 0,
+        image: newCommunityData.image || `https://source.unsplash.com/800x600/?${newCommunityData.category}`,
+        isJoined: true,
+        isAdmin: true,
+        posts: 0,
+        events: 0,
+        createdAt: new Date().toISOString()
+      };
       
+      // Update mock data
+      mockCommunities.unshift(newCommunity);
       setCommunities([newCommunity, ...communities]);
-      await fetchUserCommunities();
+      
+      // Update user's communities
+      setJoinedCommunities([newCommunity, ...joinedCommunities]);
+      setAdminCommunities([newCommunity, ...adminCommunities]);
       
       setShowCreateModal(false);
       setNewCommunityData({
@@ -369,10 +524,10 @@ const CommunityPage: React.FC = () => {
         image: ''
       });
       
-      toast.success(`Community "${newCommunityData.name}" has been created!`);
+      alert(`Community "${newCommunityData.name}" has been created!`);
     } catch (error: any) {
       console.error('Error creating community:', error);
-      toast.error(error.response?.data?.message || 'Failed to create community');
+      alert('Failed to create community');
     } finally {
       setIsSubmitting(false);
     }
@@ -382,18 +537,58 @@ const CommunityPage: React.FC = () => {
     e.preventDefault();
     
     if (!newPostData.title || !newPostData.content || !newPostData.organization) {
-      toast.error('Please fill in all required fields.');
+      alert('Please fill in all required fields.');
       return;
     }
     
     setIsSubmitting(true);
     
     try {
-      const newPost = await postService.createPost(newPostData);
+      // Find the selected community
+      const selectedCommunity = mockCommunities.find(c => c.id.toString() === newPostData.organization);
       
-      if (activeTab === 'feed') {
-        setPosts([newPost, ...posts]);
+      if (!selectedCommunity) {
+        throw new Error('Selected community not found');
       }
+
+      // Create new post with mock data
+      const newPost: Post = {
+        id: (posts.length + 1).toString(),
+        communityId: selectedCommunity.id,
+        title: newPostData.title,
+        content: newPostData.content,
+        user: {
+          id: 1, // Mock user ID
+          name: "Current User", // Mock user name
+          profilePicture: "https://randomuser.me/api/portraits/men/1.jpg" // Mock profile picture
+        },
+        createdAt: new Date().toISOString(),
+        date: new Date().toISOString(),
+        likes: [],
+        comments: [],
+        image: newPostData.images?.[0],
+        organization: {
+          id: selectedCommunity.id.toString(),
+          name: selectedCommunity.name
+        }
+      };
+      
+      // Update posts
+      setPosts([newPost, ...posts]);
+      
+      // Update community post count
+      const updatedCommunities = mockCommunities.map(c => {
+        if (c.id === selectedCommunity.id) {
+          return {
+            ...c,
+            postCount: c.postCount + 1,
+            posts: c.posts + 1
+          };
+        }
+        return c;
+      });
+      
+      setCommunities(updatedCommunities);
       
       setShowPostModal(false);
       setNewPostData({
@@ -403,10 +598,10 @@ const CommunityPage: React.FC = () => {
         images: []
       });
       
-      toast.success('Your post has been published!');
+      alert('Post created successfully!');
     } catch (error: any) {
       console.error('Error creating post:', error);
-      toast.error(error.response?.data?.message || 'Failed to create post');
+      alert(error.message || 'Failed to create post');
     } finally {
       setIsSubmitting(false);
     }
@@ -414,7 +609,7 @@ const CommunityPage: React.FC = () => {
 
 const handleToggleLike = async (postId: string) => { 
   if (!user) {
-    toast.error('Please login to like posts');
+    alert('Please login to like posts');
     return;
   }
 
@@ -436,44 +631,44 @@ const handleToggleLike = async (postId: string) => {
     // await postService.toggleLike(postId);
   } catch (error) {
     console.error('Error toggling like:', error);
-    toast.error('Failed to update like');
+    alert('Failed to update like');
   }
 };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
       case 'education':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
       case 'gardening':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
       case 'lifestyle':
-        return 'bg-purple-100 text-purple-800';
+        return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
       case 'energy':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200';
       case 'transport':
-        return 'bg-indigo-100 text-indigo-800';
+        return 'bg-indigo-100 dark:bg-indigo-900 text-indigo-800 dark:text-indigo-200';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-200';
     }
   };
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary dark:border-primary-light"></div>
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
       <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
         <div className="md:flex md:items-center md:justify-between">
           <div className="flex-1 min-w-0">
-            <h2 className="text-2xl font-bold leading-7 text-gray-900 sm:text-3xl sm:truncate">
+            <h2 className="text-2xl font-bold leading-7 text-gray-900 dark:text-white sm:text-3xl sm:truncate">
               Community
             </h2>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Connect with like-minded individuals and organizations to share ideas and make a bigger impact.
             </p>
           </div>
@@ -481,7 +676,7 @@ const handleToggleLike = async (postId: string) => {
             <button
               type="button"
               onClick={() => setShowPostModal(true)}
-              className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
             >
               <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -491,7 +686,7 @@ const handleToggleLike = async (postId: string) => {
             <button
               type="button"
               onClick={() => setShowCreateModal(true)}
-              className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+              className="ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
             >
               <svg className="-ml-1 mr-2 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                 <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -502,15 +697,15 @@ const handleToggleLike = async (postId: string) => {
         </div>
 
         {/* Tabs */}
-        <div className="mt-6 border-b border-gray-200">
+        <div className="mt-6 border-b border-gray-200 dark:border-gray-700">
           <nav className="-mb-px flex space-x-8">
             <button
               onClick={() => setActiveTab('communities')}
               className={`${
                 activeTab === 'communities'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  ? 'border-primary text-primary dark:text-primary-light'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
             >
               All Communities
             </button>
@@ -518,9 +713,9 @@ const handleToggleLike = async (postId: string) => {
               onClick={() => setActiveTab('joined')}
               className={`${
                 activeTab === 'joined'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  ? 'border-primary text-primary dark:text-primary-light'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
             >
               My Communities
             </button>
@@ -528,9 +723,9 @@ const handleToggleLike = async (postId: string) => {
               onClick={() => setActiveTab('admin')}
               className={`${
                 activeTab === 'admin'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  ? 'border-primary text-primary dark:text-primary-light'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
             >
               Managed by Me
             </button>
@@ -538,9 +733,9 @@ const handleToggleLike = async (postId: string) => {
               onClick={() => setActiveTab('feed')}
               className={`${
                 activeTab === 'feed'
-                  ? 'border-primary text-primary'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm`}
+                  ? 'border-primary text-primary dark:text-primary-light'
+                  : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
+              } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors duration-200`}
             >
               Community Feed
             </button>
@@ -551,13 +746,13 @@ const handleToggleLike = async (postId: string) => {
         {(activeTab === 'communities' || activeTab === 'joined' || activeTab === 'admin') && (
           <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <div>
-              <label htmlFor="category" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="category" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Category
               </label>
               <select
                 id="category"
                 name="category"
-                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md dark:bg-gray-800 dark:text-white"
                 value={selectedCategory}
                 onChange={(e) => setSelectedCategory(e.target.value)}
               >
@@ -570,7 +765,7 @@ const handleToggleLike = async (postId: string) => {
               </select>
             </div>
             <div className="sm:col-span-2">
-              <label htmlFor="search" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="search" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                 Search
               </label>
               <div className="mt-1 relative rounded-md shadow-sm">
@@ -578,13 +773,13 @@ const handleToggleLike = async (postId: string) => {
                   type="text"
                   name="search"
                   id="search"
-                  className="focus:ring-primary focus:border-primary block w-full pl-3 pr-10 py-2 sm:text-sm border-gray-300 rounded-md"
+                  className="focus:ring-primary focus:border-primary block w-full pl-3 pr-10 py-2 sm:text-sm border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-white dark:placeholder-gray-400"
                   placeholder="Search communities"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                  <svg className="h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg className="h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
                   </svg>
                 </div>
@@ -599,7 +794,7 @@ const handleToggleLike = async (postId: string) => {
             {filteredCommunities.map((community) => {
               const isJoined = joinedCommunities.some(c => c.id === community.id);
               return (
-                <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
+                <div key={community.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors duration-200">
                   <div className="h-48 w-full relative">
                     <img 
                       src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
@@ -613,18 +808,18 @@ const handleToggleLike = async (postId: string) => {
                     </div>
                   </div>
                   <div className="p-5">
-                    <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                    <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
+                    <h3 className="text-lg font-medium text-gray-900 dark:text-white">{community.name}</h3>
+                    <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{community.description}</p>
                     
-                    <div className="mt-4 flex items-center text-sm text-gray-500">
-                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                       </svg>
                       <span>{community.postCount} posts</span>
                     </div>
                     
-                    <div className="mt-2 flex items-center text-sm text-gray-500">
-                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <div className="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                         <path fillRule="evenodd" d="M18 5v8a2 2 0 01-2 2h-5l-5 4v-4H4a2 2 0 01-2-2V5a2 2 0 012-2h12a2 2 0 012 2zM7 8H5v2h2V8zm2 0h2v2H9V8zm6 0h-2v2h2V8z" clipRule="evenodd" />
                       </svg>
                       <span>{community.postCount} posts</span>
@@ -634,14 +829,14 @@ const handleToggleLike = async (postId: string) => {
                       {isJoined ? (
                         <button
                           onClick={() => handleLeaveCommunity(community.id)}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                         >
                           Leave
                         </button>
                       ) : (
                         <button
                           onClick={() => handleJoinCommunity(community)}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                         >
                           Join Community
                         </button>
@@ -649,7 +844,7 @@ const handleToggleLike = async (postId: string) => {
                       
                       <Link
                         to={`/community/${community.id}`}
-                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
+                        className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-primary focus:outline-none"
                       >
                         View Details
                         <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -677,7 +872,7 @@ const handleToggleLike = async (postId: string) => {
                 ).map((community) => {
                   const isAdmin = adminCommunities.some(c => c.id === community.id);
                   return (
-                    <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
+                    <div key={community.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors duration-200">
                       <div className="h-48 w-full relative">
                         <img 
                           src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
@@ -691,18 +886,18 @@ const handleToggleLike = async (postId: string) => {
                         </div>
                         {isAdmin && (
                           <div className="absolute top-0 left-0 mt-2 ml-2">
-                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-white">
+                            <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary dark:bg-primary-light text-white">
                               Admin
                             </span>
                           </div>
                         )}
                       </div>
                       <div className="p-5">
-                        <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                        <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
+                        <h3 className="text-lg font-medium text-gray-900 dark:text-white">{community.name}</h3>
+                        <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{community.description}</p>
                         
-                        <div className="mt-4 flex items-center text-sm text-gray-500">
-                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                        <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                          <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                           </svg>
                           <span>{community.postCount} posts</span>
@@ -711,14 +906,14 @@ const handleToggleLike = async (postId: string) => {
                         <div className="mt-4 flex justify-between items-center">
                           <button
                             onClick={() => handleLeaveCommunity(community.id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                           >
                             Leave
                           </button>
                           
                           <Link
                             to={`/community/${community.id}`}
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-primary focus:outline-none"
                           >
                             View Details
                             <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -732,18 +927,18 @@ const handleToggleLike = async (postId: string) => {
                 })}
               </div>
             ) : (
-              <div className="text-center py-12 bg-white shadow rounded-lg">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="text-center py-12 bg-white dark:bg-gray-800 shadow rounded-lg transition-colors duration-200">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No communities joined</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No communities joined</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   You haven't joined any communities yet. Join a community to connect with others.
                 </p>
                 <div className="mt-6">
                   <button
                     onClick={() => setActiveTab('communities')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                   >
                     Browse Communities
                   </button>
@@ -764,7 +959,7 @@ const handleToggleLike = async (postId: string) => {
                   c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                   c.description.toLowerCase().includes(searchQuery.toLowerCase())
                 ).map((community) => (
-                  <div key={community.id} className="bg-white overflow-hidden shadow rounded-lg">
+                  <div key={community.id} className="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg transition-colors duration-200">
                     <div className="h-48 w-full relative">
                       <img 
                         src={community.image || `https://source.unsplash.com/800x600/?${community.category}`} 
@@ -777,17 +972,17 @@ const handleToggleLike = async (postId: string) => {
                         </span>
                       </div>
                       <div className="absolute top-0 left-0 mt-2 ml-2">
-                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary text-white">
+                        <span className="px-2 py-1 text-xs font-medium rounded-full bg-primary dark:bg-primary-light text-white">
                           Admin
                         </span>
                       </div>
                     </div>
                     <div className="p-5">
-                      <h3 className="text-lg font-medium text-gray-900">{community.name}</h3>
-                      <p className="mt-2 text-sm text-gray-600 line-clamp-3">{community.description}</p>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">{community.name}</h3>
+                      <p className="mt-2 text-sm text-gray-600 dark:text-gray-300 line-clamp-3">{community.description}</p>
                       
-                      <div className="mt-4 flex items-center text-sm text-gray-500">
-                        <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                      <div className="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <svg className="flex-shrink-0 mr-1.5 h-5 w-5 text-gray-400 dark:text-gray-500" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
                           <path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM16 18v-3a5.972 5.972 0 00-.75-2.906A3.005 3.005 0 0119 15v3h-3zM4.75 12.094A5.973 5.973 0 004 15v3H1v-3a3 3 0 013.75-2.906z" />
                         </svg>
                         <span>{community.postCount} posts</span>
@@ -796,14 +991,14 @@ const handleToggleLike = async (postId: string) => {
                       <div className="mt-4 flex justify-between items-center">
                         <Link
                           to={`/community/${community.id}/manage`}
-                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                          className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                         >
                           Manage
                         </Link>
                         
                         <Link
                           to={`/community/${community.id}`}
-                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary hover:text-primary-dark focus:outline-none"
+                          className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-primary dark:text-primary-light hover:text-primary-dark dark:hover:text-primary focus:outline-none"
                         >
                           View Details
                           <svg className="ml-1 -mr-1 h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
@@ -816,18 +1011,18 @@ const handleToggleLike = async (postId: string) => {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12 bg-white shadow rounded-lg">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="text-center py-12 bg-white dark:bg-gray-800 shadow rounded-lg transition-colors duration-200">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No communities managed</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No communities managed</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   You don't manage any communities yet. Create a community to get started.
                 </p>
                 <div className="mt-6">
                   <button
                     onClick={() => setShowCreateModal(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                   >
                     Create Community
                   </button>
@@ -846,7 +1041,7 @@ const handleToggleLike = async (postId: string) => {
                   const community = communities.find(c => c.id.toString() === post.organization?.id);
                   const isLiked = post.likes.includes(user?.id || '');
                   return (
-                    <div key={post.id} className="bg-white shadow overflow-hidden sm:rounded-lg">
+                    <div key={post.id} className="bg-white dark:bg-gray-800 shadow overflow-hidden sm:rounded-lg transition-colors duration-200">
                       <div className="px-4 py-5 sm:px-6">
                         <div className="flex items-center">
                           <img 
@@ -855,8 +1050,8 @@ const handleToggleLike = async (postId: string) => {
                             className="h-10 w-10 rounded-full"
                           />
                           <div className="ml-4">
-                            <h3 className="text-lg font-medium text-gray-900">{post.title}</h3>
-                            <div className="flex items-center text-sm text-gray-500">
+                            <h3 className="text-lg font-medium text-gray-900 dark:text-white">{post.title}</h3>
+                            <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                               <span>{post.user.name}</span>
                               <span className="mx-1">•</span>
                               <span>{new Date(post.createdAt).toLocaleDateString()}</span>
@@ -866,8 +1061,8 @@ const handleToggleLike = async (postId: string) => {
                           </div>
                         </div>
                       </div>
-                      <div className="border-t border-gray-200 px-4 py-5 sm:px-6">
-                        <p className="text-sm text-gray-600">{post.content}</p>
+                      <div className="border-t border-gray-200 dark:border-gray-700 px-4 py-5 sm:px-6">
+                        <p className="text-sm text-gray-600 dark:text-gray-300">{post.content}</p>
         
                         {post.image && (
                           <div className="mt-4">
@@ -909,18 +1104,18 @@ const handleToggleLike = async (postId: string) => {
 
               </div>
             ) : (
-              <div className="text-center py-12 bg-white shadow rounded-lg">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="text-center py-12 bg-white dark:bg-gray-800 shadow rounded-lg transition-colors duration-200">
+                <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
                 </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No posts yet</h3>
-                <p className="mt-1 text-sm text-gray-500">
+                <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No posts yet</h3>
+                <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
                   There are no posts in your communities yet. Be the first to post!
                 </p>
                 <div className="mt-6">
                   <button
                     onClick={() => setShowPostModal(true)}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
                   >
                     Create Post
                   </button>
@@ -932,12 +1127,12 @@ const handleToggleLike = async (postId: string) => {
 
         {/* No results message */}
         {(activeTab === 'communities' && filteredCommunities.length === 0) && (
-          <div className="mt-6 text-center py-12 bg-white shadow rounded-lg">
-            <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="mt-6 text-center py-12 bg-white dark:bg-gray-800 shadow rounded-lg transition-colors duration-200">
+            <svg className="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No communities found</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-white">No communities found</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               Try adjusting your search or filters to find what you're looking for.
             </p>
             <div className="mt-6">
@@ -946,7 +1141,7 @@ const handleToggleLike = async (postId: string) => {
                   setSelectedCategory('all');
                   setSearchQuery('');
                 }}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-primary hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary dark:focus:ring-offset-gray-800"
               >
                 Clear filters
               </button>
